@@ -1,0 +1,17 @@
+{
+  "name": "Rifas Gustavo",
+  "short_name": "RifasGustavo",
+  "description": "Participa y gana con Gustavo Seijas",
+  "start_url": "/rifa.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF5500",
+  "icons": [
+    {
+      "src": "logo-moto2.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

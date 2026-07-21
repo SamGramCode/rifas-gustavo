@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gustavoseijas95 — Rifas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF5500">
+<link rel="apple-touch-icon" href="logo-moto2.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RifasGustavo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&family=Permanent+Marker&family=Bangers&family=Russo+One&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --or:#FF5500;--orl:#FF7700;--ord:#CC3300;
+  --bg:#0A0A0A;--bg2:#141414;--bg3:#1E1E1E;
+  --txt:#F0F0F0;--txt2:#AAAAAA;--brd:rgba(255,85,0,.18);
+  --card:rgba(255,255,255,.04);
+  --green:#2ECC71;--red:#E74C3C;
+}
+body.light{
+  --bg:#F5F5F5;--bg2:#EBEBEB;--bg3:#E0E0E0;
+  --txt:#111111;--txt2:#666666;--brd:rgba(255,85,0,.2);
+  --card:rgba(0,0,0,.04);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;transition:background .3s,color .3s}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--or);border-radius:3px}
+
+/* ── NAV ── */
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .3s}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:860;width:min(78vw,320px);background:#fff;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto}
+body.dark .drawer{background:#1A1A1A}
+body.light .drawer{background:#fff}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;gap:.8rem;padding:1.1rem 1.2rem;border-bottom:1px solid rgba(0,0,0,.08)}
+body.dark .drawer-header{border-bottom-color:rgba(255,255,255,.08)}
+.drawer-logo{width:44px;height:44px;border-radius:10px;background:var(--or);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;letter-spacing:1px;flex-shrink:0;overflow:hidden}
+.drawer-logo img{width:100%;height:100%;object-fit:cover}
+.drawer-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1.5px;color:var(--txt);flex:1}
+.drawer-theme{background:transparent;border:1.5px solid rgba(0,0,0,.12);border-radius:50%;width:34px;height:34px;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt);flex-shrink:0;transition:all .2s}
+body.dark .drawer-theme{border-color:rgba(255,255,255,.15)}
+.drawer-close{background:transparent;border:none;color:var(--or);font-size:1.4rem;cursor:pointer;padding:.2rem;flex-shrink:0;line-height:1}
+.drawer-body{padding:1.2rem}
+.drawer-section-lbl{font-size:.68rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:.8rem;margin-top:.4rem}
+.drawer-item{display:flex;align-items:center;gap:.9rem;padding:1rem 1.1rem;background:var(--bg3);border-radius:14px;margin-bottom:.6rem;cursor:pointer;text-decoration:none;transition:all .2s;color:var(--txt);-webkit-tap-highlight-color:transparent}
+body.light .drawer-item{background:#F4F4F4}
+.drawer-item:hover{background:rgba(255,85,0,.08);border-left:3px solid var(--or)}
+.drawer-item-icon{font-size:1.2rem;width:28px;text-align:center;flex-shrink:0}
+.drawer-item-lbl{font-weight:800;font-size:.88rem;letter-spacing:.5px;text-transform:uppercase}
+
+/* ── HERO ── */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:180px}
+.hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 100%);z-index:1}
+.hero-content{position:relative;z-index:2;text-align:center;padding:2rem 1.5rem;display:flex;flex-direction:column;align-items:center;gap:1.2rem;max-width:600px}
+.hero-tag{font-size:.78rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--or);background:rgba(255,85,0,.12);border:1px solid rgba(255,85,0,.35);padding:.4rem 1.2rem;border-radius:50px}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,12vw,7rem);line-height:.95;letter-spacing:2px;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+.hero-title span{color:var(--or)}
+.hero-sub{font-size:clamp(.9rem,2.5vw,1.1rem);color:rgba(255,255,255,.8);font-weight:600;max-width:400px}
+.hero-avail{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:.9rem;color:#fff}
+.avail-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:dotPulse 1.5s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+
+/* ── CTA BUTTON (pulsing orange) ── */
+.btn-cta{background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;padding:1.1rem 3rem;border-radius:50px;font-weight:900;font-size:1.1rem;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 8px 30px rgba(255,85,0,.55);animation:ctaPulse 1.6s ease-in-out infinite;cursor:pointer;border:none;transition:transform .1s}
+@keyframes ctaPulse{0%,100%{transform:scale(1);box-shadow:0 8px 30px rgba(255,85,0,.55)}50%{transform:scale(1.07);box-shadow:0 14px 45px rgba(255,85,0,.85)}}
+.btn-cta:active{transform:scale(.97)!important}
+
+/* ── INFO STRIP ── */
+.strip{background:var(--bg2);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);padding:2.5rem 1.5rem;display:flex;justify-content:center;gap:3rem;flex-wrap:wrap}
+.premios-section{display:none;padding:2rem 1.5rem;max-width:640px;margin:0 auto;text-align:center}
+.premios-section.visible{display:block}
+.premios-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--or);margin-bottom:.3rem}
+.premios-sub{font-size:.8rem;color:var(--txt2);margin-bottom:1.2rem;text-transform:uppercase;letter-spacing:1px}
+.premios-grid{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}
+.premio-chip{background:linear-gradient(135deg,var(--or),#ff8c42);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;padding:.4rem 1.1rem;border-radius:12px;box-shadow:0 4px 18px rgba(255,85,0,.35);animation:popIn .4s ease}
+.strip-item{text-align:center}
+.strip-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--or);line-height:1}
+.strip-lbl{font-size:.75rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-top:.2rem}
+
+/* ── FOOTER ── */
+.footer{background:var(--bg2);border-top:1px solid var(--brd);padding:2rem 1.5rem;text-align:center}
+.footer-brand{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--or);margin-bottom:.5rem}
+.footer-txt{font-size:.82rem;color:var(--txt2);margin-bottom:1rem}
+.wa-btn{display:inline-flex;align-items:center;gap:.6rem;background:#25D366;color:#fff;padding:.8rem 2rem;border-radius:50px;font-weight:800;font-size:.92rem;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,.35);transition:all .3s;margin-bottom:1.5rem}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(37,211,102,.5)}
+.dev-link{display:block;font-size:.78rem;color:var(--txt2);margin-top:1rem}
+.dev-link a{color:var(--or);font-weight:700;text-decoration:none}
+.dev-link a:hover{text-decoration:underline}
+
+/* ── PURCHASE MODAL ── */
+.modal-wrap{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s}
+.modal-wrap.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--bg2);border:1px solid var(--brd);border-radius:24px 24px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:1.5rem;transform:translateY(100%);transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.modal-wrap.open .modal-box{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 1.2rem}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;color:var(--or);margin-bottom:1.2rem;text-align:center}
+.modal-close{position:absolute;top:1rem;right:1rem;background:var(--card);border:1px solid var(--brd);color:var(--txt);border-radius:50%;width:34px;height:34px;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── TICKET QTY ── */
+.qty-box{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:1.4rem;text-align:center;margin-bottom:1.2rem}
+.qty-ctrl{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:.5rem}
+.qty-btn{background:var(--bg3);border:2px solid var(--brd);color:var(--txt);width:48px;height:48px;border-radius:12px;font-size:1.4rem;font-weight:900;display:flex;align-items:center;justify-content:center;transition:all .2s;touch-action:manipulation}
+.qty-btn:hover{border-color:var(--or);background:rgba(255,85,0,.1);color:var(--or)}
+.qty-val{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;color:var(--txt);letter-spacing:2px;min-width:80px}
+.qty-lbl{font-size:.72rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:2px}
+.price-box{background:linear-gradient(135deg,rgba(255,85,0,.08),rgba(255,119,0,.12));border:1px solid rgba(255,85,0,.3);border-radius:14px;padding:1.1rem;margin-bottom:1rem}
+.price-unit{font-size:.8rem;font-weight:700;color:var(--or);margin-bottom:.2rem}
+.price-total{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--green);letter-spacing:2px;line-height:1}
+.price-currency{font-size:.9rem;font-weight:700;color:var(--txt2)}
+.quick-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.8rem}
+.quick-btn{background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt2);padding:.5rem .3rem;border-radius:8px;font-size:.75rem;font-weight:800;cursor:pointer;transition:all .2s;touch-action:manipulation;text-align:center}
+.quick-btn:hover,.quick-btn.sel{border-color:var(--or);background:rgba(255,85,0,.1);color:var(--or)}
+
+/* ── FORM ── */
+.form-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin-bottom:.4rem;display:block}
+.form-input{width:100%;background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt);border-radius:10px;padding:.8rem 1rem;font-size:.92rem;margin-bottom:1rem;transition:border .2s}
+.form-input:focus{border-color:rgba(255,85,0,.6)}
+.form-input::placeholder{color:var(--txt2)}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem}
+.pay-card{background:var(--bg3);border:2px solid var(--brd);border-radius:12px;padding:.9rem;cursor:pointer;transition:all .2s;text-align:center;touch-action:manipulation}
+.pay-card:hover{border-color:rgba(255,85,0,.4)}
+.pay-card.sel{border-color:var(--or);background:rgba(255,85,0,.07)}
+.pay-card.sel.nequi{border-color:#E91E8C;background:rgba(233,30,140,.07)}
+.pay-card.sel.daviplata{border-color:#E52B20;background:rgba(229,43,32,.07)}
+.pay-card.sel.breb{border-color:#FFC300;background:rgba(255,195,0,.07)}
+.pay-card.sel.binance{border-color:#F3BA2F;background:rgba(243,186,47,.07)}
+.pay-icon{font-size:1.6rem;margin-bottom:.3rem}
+.pay-name{font-weight:800;font-size:.85rem}
+.pay-info-box{background:rgba(255,85,0,.07);border:1px solid rgba(255,85,0,.25);border-radius:12px;padding:1rem;margin-bottom:1rem;display:none}
+.pay-info-box.show{display:block}
+.pay-info-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--or);letter-spacing:2px}
+.pay-info-lbl{font-size:.78rem;color:var(--txt2)}
+
+/* ── UPLOAD ── */
+.upload-box{background:rgba(255,85,0,.05);border:2px dashed rgba(255,85,0,.35);border-radius:12px;padding:1.2rem;text-align:center;margin-bottom:1rem}
+.upload-box-lbl{font-weight:800;font-size:.88rem;color:var(--or);margin-bottom:.3rem}
+.upload-box-sub{font-size:.78rem;color:var(--txt2);margin-bottom:.8rem}
+.upload-btn{background:var(--or);color:#fff;padding:.6rem 1.4rem;border-radius:8px;font-weight:800;font-size:.82rem;cursor:pointer;display:inline-block;transition:background .2s}
+.upload-btn:hover{background:var(--orl)}
+.upload-preview{max-width:100%;max-height:160px;object-fit:contain;border-radius:8px;margin-top:.8rem;display:none;border:1px solid var(--brd)}
+.upload-ok{color:var(--green);font-weight:800;font-size:.85rem;margin-top:.5rem;display:none}
+
+/* ── STEPS FOOTER ── */
+.modal-foot{display:flex;gap:.7rem;padding-top:1rem;border-top:1px solid var(--brd);margin-top:1rem}
+.btn-back{flex:1;background:transparent;border:1.5px solid var(--brd);color:var(--txt2);padding:.85rem;border-radius:12px;font-weight:700;font-size:.88rem;transition:all .2s}
+.btn-back:hover{border-color:var(--txt2);color:var(--txt)}
+.btn-next{flex:2;background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;padding:.85rem;border-radius:12px;font-weight:900;font-size:.95rem;letter-spacing:.5px;transition:all .2s;box-shadow:0 4px 15px rgba(255,85,0,.35)}
+.btn-next:disabled{opacity:.4;cursor:not-allowed;animation:none}
+.btn-next:not(:disabled):hover{background:linear-gradient(135deg,var(--orl),var(--or));transform:translateY(-1px)}
+
+/* ── CONFIRMATION ── */
+.confirm-wrap{text-align:center;padding:1.5rem 0}
+.confirm-icon{font-size:4.5rem;margin-bottom:.8rem;animation:popIn .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.confirm-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green);letter-spacing:2px;margin-bottom:.4rem}
+.confirm-sub{font-size:.88rem;color:var(--txt2);margin-bottom:1.5rem}
+.numeros-box{background:linear-gradient(135deg,rgba(46,204,113,.08),rgba(46,204,113,.12));border:1.5px solid rgba(46,204,113,.35);border-radius:16px;padding:1.2rem;margin-bottom:1rem}
+.numeros-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--green);margin-bottom:.8rem}
+.numeros-grid{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.numero-chip{background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:1px;padding:.3rem .8rem;border-radius:8px;box-shadow:0 3px 10px rgba(46,204,113,.3)}
+.confirm-wa{display:inline-flex;align-items:center;gap:.5rem;background:#25D366;color:#fff;padding:.8rem 1.8rem;border-radius:50px;font-weight:800;font-size:.9rem;text-decoration:none;margin-top:.5rem;box-shadow:0 4px 15px rgba(37,211,102,.35);transition:all .3s}
+.confirm-wa:hover{transform:translateY(-2px)}
+
+/* ── ALERT 200 ── */
+.alert-200{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.alert-200.open{opacity:1;pointer-events:all}
+.alert-200-box{background:var(--bg2);border:2px solid var(--red);border-radius:20px;padding:2rem 1.5rem;max-width:340px;text-align:center}
+.alert-200-icon{font-size:3rem;margin-bottom:.8rem}
+.alert-200-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--red);letter-spacing:1px;margin-bottom:.5rem}
+.alert-200-txt{font-size:.88rem;color:var(--txt2);margin-bottom:1.2rem;line-height:1.6}
+.alert-200-btn{background:var(--red);color:#fff;padding:.8rem 2rem;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;transition:background .2s}
+.alert-200-btn:hover{background:#c0392b}
+
+/* ── ADMIN OVERLAY ── */
+.admin-wrap{position:fixed;inset:0;z-index:950;background:var(--bg);overflow-y:auto;display:none}
+.admin-wrap.open{display:block}
+.admin-nav{background:var(--bg2);border-bottom:1px solid var(--brd);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.admin-brand{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--or)}
+.admin-exit{background:transparent;border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s}
+.admin-exit:hover{border-color:var(--red);color:var(--red)}
+.admin-body{max-width:720px;margin:0 auto;padding:1.5rem}
+.admin-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:var(--bg2);border-radius:12px;padding:.4rem}
+.admin-tab{flex:1;padding:.6rem;border-radius:8px;font-weight:800;font-size:.82rem;background:transparent;color:var(--txt2);cursor:pointer;transition:all .2s;text-align:center}
+.admin-tab.active{background:var(--or);color:#fff}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.admin-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.admin-card-title{font-weight:900;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;color:var(--or);margin-bottom:1rem}
+.admin-row{margin-bottom:.9rem}
+.admin-lbl{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin-bottom:.35rem;display:block}
+.admin-input{width:100%;background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt);border-radius:8px;padding:.7rem .9rem;font-size:.88rem;transition:border .2s}
+.admin-input:focus{border-color:rgba(255,85,0,.5)}
+.admin-save{background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;padding:.8rem 2rem;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;box-shadow:0 4px 15px rgba(255,85,0,.3);transition:all .2s}
+.sorteo-qty-btn{padding:.55rem 1.1rem;border-radius:8px;border:2px solid var(--brd);background:var(--bg3);color:var(--txt);font-size:1rem;font-weight:900;cursor:pointer;transition:all .2s}
+.sorteo-qty-btn.active{border-color:var(--or);background:rgba(255,85,0,.12);color:var(--or)}
+.admin-save:hover{transform:translateY(-1px)}
+
+/* ── BOLETOS TABLE ── */
+.boletos-filters{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .2s}
+.filter-btn.active{border-color:var(--or);color:var(--or);background:rgba(255,85,0,.08)}
+.boleto-card{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-bottom:.8rem;transition:border .2s}
+.boleto-card.pendiente{border-left:3px solid #F39C12}
+.boleto-card.aprobado{border-left:3px solid var(--green)}
+.boleto-card.rechazado{border-left:3px solid var(--red);opacity:.6}
+.boleto-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.boleto-id{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--or)}
+.boleto-estado{font-size:.7rem;font-weight:800;padding:.2rem .6rem;border-radius:50px;text-transform:uppercase}
+.boleto-estado.pendiente{background:rgba(243,156,18,.15);color:#F39C12}
+.boleto-estado.aprobado{background:rgba(46,204,113,.15);color:var(--green)}
+.boleto-estado.rechazado{background:rgba(231,76,60,.15);color:var(--red)}
+.boleto-info{font-size:.82rem;color:var(--txt2);margin-bottom:.5rem;line-height:1.6}
+.boleto-numeros{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem}
+.boleto-num{background:rgba(255,85,0,.12);border:1px solid rgba(255,85,0,.3);color:var(--or);font-size:.72rem;font-weight:800;padding:.15rem .5rem;border-radius:6px}
+.boleto-actions{display:flex;gap:.5rem}
+.btn-aprobar{background:rgba(46,204,113,.12);border:1.5px solid var(--green);color:var(--green);padding:.4rem .9rem;border-radius:8px;font-weight:800;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-aprobar:hover{background:var(--green);color:#fff}
+.btn-rechazar{background:rgba(231,76,60,.08);border:1.5px solid var(--red);color:var(--red);padding:.4rem .9rem;border-radius:8px;font-weight:800;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-rechazar:hover{background:var(--red);color:#fff}
+.btn-ver-comp{background:rgba(255,85,0,.08);border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-ver-comp:hover{border-color:var(--or);color:var(--or)}
+
+/* ── ADMIN LOGIN ── */
+.admin-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.admin-login-box{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:2.5rem;width:100%;max-width:360px;text-align:center}
+.admin-login-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--or);margin-bottom:.3rem}
+.admin-login-sub{font-size:.82rem;color:var(--txt2);margin-bottom:1.5rem}
+.admin-login-err{color:var(--red);font-size:.82rem;margin-top:.5rem;display:none}
+
+/* ── MEDIA UPLOAD ADMIN ── */
+.media-preview-wrap{margin-top:.8rem;border-radius:10px;overflow:hidden;max-height:200px;display:none}
+.media-preview-wrap img,.media-preview-wrap video{width:100%;height:200px;object-fit:cover}
+.media-tipo-btns{display:flex;gap:.5rem;margin-bottom:.8rem}
+.media-tipo-btn{flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--brd);background:transparent;color:var(--txt2);font-weight:800;font-size:.82rem;cursor:pointer;transition:all .2s}
+.media-tipo-btn.active{border-color:var(--or);background:rgba(255,85,0,.08);color:var(--or)}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem}
+.stat-card{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;text-align:center}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--or);letter-spacing:1px;line-height:1}
+.stat-lbl{font-size:.72rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-top:.2rem}
+.stat-bar{height:8px;background:var(--bg2);border-radius:4px;margin-top:.8rem;overflow:hidden}
+.stat-bar-fill{height:100%;background:linear-gradient(90deg,var(--or),var(--orl));border-radius:4px;transition:width .5s}
+
+/* ── VERIFICAR ── */
+.verif-result{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-top:1rem;display:none}
+
+@media(max-width:480px){
+  .pay-grid{grid-template-columns:1fr 1fr}
+  .quick-btns{grid-template-columns:repeat(4,1fr)}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .btn-cta{padding:.95rem 2.2rem;font-size:1rem}
+}
+@media(max-width:640px){
+  #mainNav{height:75px!important;top:10px!important}
+  #mainNav img{height:160px!important;top:-35px!important}
+  .nav-domain{font-size:20px!important;letter-spacing:.5px!important;left:105px!important;transform:none!important;right:80px!important;text-align:center;overflow:hidden;text-overflow:ellipsis}
+  .nav-handle span[style*="color:#fff"]{font-size:10px!important}
+  .nav-handle{left:8px!important;bottom:-15px!important}
+  .hero{margin-top:98px!important}
+}
+</style>
+</head>
+<body class="dark">
+
+<!-- ══ ALERT 200 ══ -->
+<div class="alert-200" id="alert200">
+  <div class="alert-200-box">
+    <div class="alert-200-icon">🔒</div>
+    <div class="alert-200-title">Límite de Seguridad</div>
+    <div class="alert-200-txt">Por seguridad, el máximo de tickets <strong>por compra</strong> es <strong>200</strong>. Si necesitas más, realiza una nueva compra.</div>
+    <button class="alert-200-btn" onclick="cerrarAlert200()">Entendido</button>
+  </div>
+</div>
+
+<!-- admin panel movido a admin.html -->
+<div class="admin-wrap" id="adminWrap" style="display:none">
+  <div id="adminLoginView" class="admin-login">
+    <div class="admin-login-box">
+      <div class="admin-login-title">ADMIN</div>
+      <div class="admin-login-sub">Panel de propietario — gustavoseijas95</div>
+      <input class="admin-input" type="password" id="adminPassInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="admin-save" style="width:100%;margin-top:.8rem" onclick="adminLogin()">Ingresar</button>
+      <div class="admin-login-err" id="adminErr">Contraseña incorrecta</div>
+      <div style="margin-top:1.2rem"><a href="#" onclick="cerrarAdmin();return false" style="font-size:.78rem;color:var(--txt2)">← Volver al sitio</a></div>
+    </div>
+  </div>
+
+  <div id="adminDashView" style="display:none">
+    <div class="admin-nav">
+      <div class="admin-brand">⚙️ ADMIN</div>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="admin-exit" style="background:rgba(231,76,60,.12);border-color:var(--red);color:var(--red);font-weight:800" onclick="iniciarNuevaRifa()">🔄 Nueva Rifa</button>
+        <button class="admin-exit" onclick="cerrarAdmin()">← Salir</button>
+      </div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-tabs">
+        <div class="admin-tab active" onclick="setAdminTab('config',this)">⚙️ Config</div>
+        <div class="admin-tab" onclick="setAdminTab('boletos',this)">🎫 Boletos</div>
+        <div class="admin-tab" onclick="setAdminTab('stats',this)">📊 Stats</div>
+        <div class="admin-tab" onclick="setAdminTab('sorteos',this)">🎯 Sorteos</div>
+      </div>
+
+      <!-- CONFIG TAB -->
+      <div class="admin-section active" id="tab-config">
+        <div class="admin-card">
+          <div class="admin-card-title">🖼️ Hero — Imagen o Video</div>
+          <div class="media-tipo-btns">
+            <button class="media-tipo-btn active" id="btnTipoImg" onclick="setHeroTipo('imagen',this)">📷 Imagen</button>
+            <button class="media-tipo-btn" id="btnTipoVid" onclick="setHeroTipo('video',this)">🎬 Video</button>
+          </div>
+          <div class="admin-row">
+            <label class="admin-lbl">Subir archivo</label>
+            <label class="upload-btn" style="display:inline-block">
+              📁 Seleccionar archivo
+              <input type="file" id="heroFileInput" style="display:none" accept="image/*,video/*" onchange="previewHeroMedia(this)">
+            </label>
+            <div class="media-preview-wrap" id="heroPreviewWrap">
+              <img id="heroPreviewImg" src="" alt="" style="display:none">
+              <video id="heroPreviewVid" src="" muted autoplay loop style="display:none"></video>
+            </div>
+          </div>
+          <div class="admin-row">
+            <label class="admin-lbl">Título principal</label>
+            <input class="admin-input" id="cfgTitulo" placeholder="CUMPLIENDO SUEÑOS">
+          </div>
+          <div class="admin-row">
+            <label class="admin-lbl">Subtítulo</label>
+            <input class="admin-input" id="cfgSubtitulo" placeholder="PARTICIPA Y GANA CON GUSTAVO">
+          </div>
+          <button class="admin-save" onclick="guardarHero()">💾 Guardar Hero</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-title">🎫 Rifa</div>
+          <div class="admin-row">
+            <label class="admin-lbl">Nombre del premio / rifa</label>
+            <input class="admin-input" id="cfgRifaNombre" placeholder="Gran Rifa de Moto">
+          </div>
+          <div class="admin-row">
+            <label class="admin-lbl">Precio por ticket (COP)</label>
+            <input class="admin-input" type="number" id="cfgPrecio" placeholder="5000">
+          </div>
+          <div class="admin-row">
+            <label class="admin-lbl">Total de tickets (máx 200)</label>
+            <input class="admin-input" type="number" id="cfgTotal" max="200" placeholder="200">
+          </div>
+          <button class="admin-save" onclick="guardarConfigRifa()">💾 Guardar Rifa</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-title">💳 Métodos de pago</div>
+          <div class="admin-row"><label class="admin-lbl">Nequi — número</label><input class="admin-input" id="cfgNequi" placeholder="310 000 0000"></div>
+          <div class="admin-row"><label class="admin-lbl">Daviplata — número</label><input class="admin-input" id="cfgDaviplata" placeholder="310 000 0000"></div>
+          <div class="admin-row"><label class="admin-lbl">Bre-B — número o usuario</label><input class="admin-input" id="cfgBreb" placeholder="@usuario o número"></div>
+          <div class="admin-row"><label class="admin-lbl">Binance — ID o email</label><input class="admin-input" id="cfgBinance" placeholder="ID Binance Pay o email"></div>
+          <button class="admin-save" onclick="guardarMetodosPago()">💾 Guardar Métodos</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-title">🔐 Cambiar contraseña</div>
+          <div class="admin-row"><label class="admin-lbl">Nueva contraseña</label><input class="admin-input" type="password" id="cfgPass1" placeholder="Nueva contraseña"></div>
+          <div class="admin-row"><label class="admin-lbl">Confirmar</label><input class="admin-input" type="password" id="cfgPass2" placeholder="Repetir contraseña"></div>
+          <button class="admin-save" onclick="cambiarPassword()">💾 Cambiar</button>
+          <div id="passMsg" style="font-size:.8rem;margin-top:.5rem"></div>
+        </div>
+      </div>
+
+      <!-- BOLETOS TAB -->
+      <div class="admin-section" id="tab-boletos">
+        <div class="boletos-filters">
+          <button class="filter-btn active" onclick="filtrarBoletos('todos',this)">Todos</button>
+          <button class="filter-btn" onclick="filtrarBoletos('pendiente',this)">⏳ Pendientes</button>
+          <button class="filter-btn" onclick="filtrarBoletos('aprobado',this)">✅ Aprobados</button>
+          <button class="filter-btn" onclick="filtrarBoletos('rechazado',this)">❌ Rechazados</button>
+        </div>
+        <div id="boletosLista"></div>
+      </div>
+
+      <!-- STATS TAB -->
+      <!-- SORTEOS TAB -->
+      <div class="admin-section" id="tab-sorteos">
+        <div class="admin-card">
+          <div class="admin-card-title">🎯 Sorteo Previo</div>
+          <div class="admin-row">
+            <label class="admin-lbl">¿Cuántos números premiar?</label>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+              <button class="sorteo-qty-btn" onclick="setSorteoQty(1,this)">1</button>
+              <button class="sorteo-qty-btn" onclick="setSorteoQty(2,this)">2</button>
+              <button class="sorteo-qty-btn" onclick="setSorteoQty(3,this)">3</button>
+              <button class="sorteo-qty-btn" onclick="setSorteoQty(4,this)">4</button>
+              <button class="sorteo-qty-btn" onclick="setSorteoQty(5,this)">5</button>
+            </div>
+          </div>
+          <div class="admin-row">
+            <button class="admin-save" onclick="realizarSorteo()" id="btnSortear" disabled>🎰 Realizar Sorteo</button>
+          </div>
+          <div id="sorteoResultado" style="display:none;margin-top:1rem">
+            <div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin-bottom:.6rem">Números sorteados</div>
+            <div id="sorteoNums" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem"></div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+              <button class="admin-save" onclick="publicarPremios()">📢 Publicar en página</button>
+              <button class="admin-save" style="background:var(--red);box-shadow:none" onclick="limpiarPremios()">🗑️ Quitar premios</button>
+            </div>
+          </div>
+          <div id="premiosActuales" style="margin-top:1rem"></div>
+        </div>
+      </div>
+
+      <div class="admin-section" id="tab-stats">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="stVendidos">0</div><div class="stat-lbl">Tickets vendidos</div></div>
+          <div class="stat-card"><div class="stat-num" id="stDisponibles">0</div><div class="stat-lbl">Disponibles</div></div>
+          <div class="stat-card"><div class="stat-num" id="stPendientes">0</div><div class="stat-lbl">Pendientes</div></div>
+          <div class="stat-card"><div class="stat-num" id="stIngresos">$0</div><div class="stat-lbl">Ingresos aprobados</div></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">📊 Ocupación</div>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--txt2);margin-bottom:.5rem">
+            <span>Tickets vendidos/aprobados</span><span id="stPct">0%</span>
+          </div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="stBar" style="width:0%"></div></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">🔍 Verificar número</div>
+          <div style="display:flex;gap:.5rem">
+            <input class="admin-input" type="number" id="verifNum" placeholder="Número de ticket" style="flex:1;margin-bottom:0">
+            <button class="admin-save" style="flex-shrink:0" onclick="verificarNumero()">Buscar</button>
+          </div>
+          <div class="verif-result" id="verifResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NÚMERO DORADO -->
+<div id="doradoModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:var(--bg2);border:2px solid gold;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center">
+    <div style="font-size:3rem;margin-bottom:.5rem">🏆⭐🏆</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:gold;letter-spacing:2px;margin-bottom:.4rem">¡NÚMERO DORADO!</div>
+    <div style="font-size:.95rem;color:var(--txt2);margin-bottom:1.2rem">¡Felicidades! Uno de tus números es un <strong style="color:gold">número premiado</strong>. Gustavo se pondrá en contacto contigo pronto.</div>
+    <div id="doradoNums" style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:1.5rem"></div>
+    <button style="width:100%;background:linear-gradient(135deg,#f7c948,#e6a817);color:#000;padding:.9rem;border-radius:12px;font-weight:900;font-size:1rem;border:none;cursor:pointer" onclick="cerrarDoradoModal()">🎉 ¡Entendido!</button>
+  </div>
+</div>
+
+<!-- MODAL NUEVA RIFA -->
+<div id="nuevaRifaModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:1.5rem">
+  <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:2rem;max-width:360px;width:100%;text-align:center">
+    <div style="font-size:2rem;margin-bottom:.5rem">🔄</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--red);margin-bottom:.5rem">NUEVA RIFA</div>
+    <p style="font-size:.83rem;color:var(--txt2);margin-bottom:1.2rem">Esto borrará <strong>todos los boletos</strong> y los premios intermedios. La configuración (precio, nombre, métodos de pago) y el hero se mantienen.<br><br>Escribe tu contraseña para confirmar:</p>
+    <input class="admin-input" type="password" id="nuevaRifaPass" placeholder="Contraseña" style="margin-bottom:.8rem" onkeydown="if(event.key==='Enter')confirmarNuevaRifa()">
+    <div id="nuevaRifaErr" style="color:var(--red);font-size:.78rem;margin-bottom:.6rem;display:none">Contraseña incorrecta</div>
+    <div style="display:flex;gap:.6rem">
+      <button class="admin-save" style="flex:1;background:var(--red);box-shadow:none" onclick="confirmarNuevaRifa()">✅ Confirmar</button>
+      <button class="admin-save" style="flex:1;background:var(--bg3);color:var(--txt);box-shadow:none" onclick="cerrarModalNuevaRifa()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LANDING PAGE ══ -->
+<div id="landingPage">
+  <nav id="mainNav" style="position:fixed;top:40px;left:10px;right:10px;transition:transform .35s ease;height:120px;background:rgba(255,255,255,.80);z-index:800;display:flex;align-items:center;justify-content:flex-end;padding:0 1.5rem;box-shadow:0 4px 24px rgba(0,0,0,.13);border-radius:24px;backdrop-filter:blur(8px)">
+    <img src="logo-moto2.png" alt="logo" style="position:absolute;left:0;top:-80px;height:300px;width:auto;z-index:2;bottom:auto;transform:rotate(-10deg);pointer-events:none">
+    <span class="nav-handle" style="position:absolute;left:25px;bottom:-20px;transform:rotate(-15deg);z-index:10;display:inline-block">
+      <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.75);font-family:'Permanent Marker',cursive;font-size:1.2rem;letter-spacing:1px;white-space:nowrap;color:transparent;background:none;padding:5px 0;clip-path:polygon(0% 12%,4% 0%,9% 8%,15% 1%,21% 9%,27% 0%,33% 7%,39% 1%,45% 8%,51% 0%,57% 6%,63% 1%,69% 9%,75% 0%,81% 7%,87% 1%,93% 8%,100% 2%,97% 18%,100% 32%,96% 45%,100% 58%,97% 72%,100% 85%,96% 100%,91% 92%,85% 100%,79% 93%,73% 100%,67% 91%,61% 100%,55% 92%,49% 100%,43% 93%,37% 100%,31% 91%,25% 100%,19% 92%,13% 100%,7% 91%,2% 100%,0% 88%,3% 72%,0% 58%,4% 44%,0% 30%,3% 16%)">@gustavoseijas95</span>
+      <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Permanent Marker',cursive;font-size:1.2rem;letter-spacing:1px;white-space:nowrap;color:transparent;background:none;padding:11px 21px;clip-path:polygon(0% 12%,4% 0%,9% 8%,15% 1%,21% 9%,27% 0%,33% 7%,39% 1%,45% 8%,51% 0%,57% 6%,63% 1%,69% 9%,75% 0%,81% 7%,87% 1%,93% 8%,100% 2%,97% 18%,100% 32%,96% 45%,100% 58%,97% 72%,100% 85%,96% 100%,91% 92%,85% 100%,79% 93%,73% 100%,67% 91%,61% 100%,55% 92%,49% 100%,43% 93%,37% 100%,31% 91%,25% 100%,19% 92%,13% 100%,7% 91%,2% 100%,0% 88%,3% 72%,0% 58%,4% 44%,0% 30%,3% 16%)">@gustavoseijas95</span>
+      <span style="font-family:'Permanent Marker',cursive;font-size:1.2rem;letter-spacing:1px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4),-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,-4px 0 0 #000,4px 0 0 #000,0 -4px 0 #000,0 4px 0 #000,-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,3px 3px 0 #000;background:none;padding:10px 20px;clip-path:polygon(0% 12%,4% 0%,9% 8%,15% 1%,21% 9%,27% 0%,33% 7%,39% 1%,45% 8%,51% 0%,57% 6%,63% 1%,69% 9%,75% 0%,81% 7%,87% 1%,93% 8%,100% 2%,97% 18%,100% 32%,96% 45%,100% 58%,97% 72%,100% 85%,96% 100%,91% 92%,85% 100%,79% 93%,73% 100%,67% 91%,61% 100%,55% 92%,49% 100%,43% 93%,37% 100%,31% 91%,25% 100%,19% 92%,13% 100%,7% 91%,2% 100%,0% 88%,3% 72%,0% 58%,4% 44%,0% 30%,3% 16%);display:inline-block;position:relative">@gustavoseijas<span style="color:#FF5500">95</span></span>
+    </span>
+    <span class="nav-domain" style="position:absolute;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:clamp(0.6rem,3.5vw,1.8rem);color:#000;letter-spacing:clamp(0px,0.8vw,3px);white-space:nowrap;z-index:3;font-weight:900">RIFAS-GUSTAVO.VERCEL.APP</span>
+    <button id="themeBtn" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;padding:.5rem 4px;position:relative;z-index:3;font-size:1.4rem;display:flex;align-items:center">🌙</button>
+    <button onclick="abrirDrawer()" style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:6px;padding:.5rem 0 .5rem 4px;position:relative;z-index:3">
+      <span style="display:block;width:28px;height:3px;background:#333;border-radius:2px"></span>
+      <span style="display:block;width:28px;height:3px;background:#333;border-radius:2px"></span>
+      <span style="display:block;width:28px;height:3px;background:#333;border-radius:2px"></span>
+    </button>
+  </nav>
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="cerrarDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-logo"><span style="font-size:.75rem">GR</span></div>
+      <div class="drawer-title">@gustavoseijas95</div>
+      <button class="drawer-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <button class="drawer-close" onclick="cerrarDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-section-lbl">Menú Principal</div>
+      <a class="drawer-item" onclick="cerrarDrawer();setTimeout(abrirVerificar,200);return false" href="#">
+        <span class="drawer-item-icon">🔍</span>
+        <span class="drawer-item-lbl">Verificar Boleto</span>
+      </a>
+      <a class="drawer-item" href="https://wa.me/573009648502?text=Hola%20Gustavo%2C%20necesito%20soporte" target="_blank" onclick="cerrarDrawer()">
+        <span class="drawer-item-icon">💬</span>
+        <span class="drawer-item-lbl">Soporte / Contacto</span>
+      </a>
+
+      <div class="drawer-section-lbl" style="margin-top:1.2rem">Redes Sociales</div>
+      <a class="drawer-item" id="drawerFb" href="#" target="_blank" onclick="cerrarDrawer()">
+        <span class="drawer-item-icon">👥</span>
+        <span class="drawer-item-lbl">Facebook</span>
+      </a>
+      <a class="drawer-item" id="drawerIg" href="#" target="_blank" onclick="cerrarDrawer()">
+        <span class="drawer-item-icon">📸</span>
+        <span class="drawer-item-lbl">Instagram</span>
+      </a>
+      <a class="drawer-item" id="drawerYt" href="#" target="_blank" onclick="cerrarDrawer()">
+        <span class="drawer-item-icon">▶️</span>
+        <span class="drawer-item-lbl">YouTube</span>
+      </a>
+    </div>
+  </div>
+
+  <section class="hero" id="heroSection">
+    <img class="hero-media" id="heroImg" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80" alt="Rifa">
+    <video class="hero-media" id="heroVid" muted autoplay loop playsinline style="display:none"></video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tag">🏆 PARTICIPA Y GANA</div>
+      <h1 class="hero-title" id="heroTitle">CUMPLIENDO<br><span>SUEÑOS</span></h1>
+      <p class="hero-sub" id="heroSubtitle">PARTICIPA Y GANA CON GUSTAVO</p>
+      <div class="hero-avail"><div class="avail-dot"></div><span id="availTxt">TICKETS DISPONIBLES AHORA</span></div>
+      <button class="btn-cta" onclick="abrirComprar()">🎫 COMPRAR TICKET AHORA</button>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="strip-item"><div class="strip-num" id="stripVendidos">0</div><div class="strip-lbl">Tickets vendidos</div></div>
+    <div class="strip-item"><div class="strip-num" id="stripDisp">200</div><div class="strip-lbl">Disponibles</div></div>
+    <div class="strip-item"><div class="strip-num" id="stripPrecio">$0</div><div class="strip-lbl">Por ticket</div></div>
+    <div class="strip-item"><div class="strip-num">200</div><div class="strip-lbl">Total tickets</div></div>
+  </div>
+
+  <!-- NÚMEROS DORADOS -->
+  <div class="premios-section" id="premiosSection">
+    <div class="premios-title">⭐ Números Dorados</div>
+    <div class="premios-sub">Estos números tienen premio especial — ¡pueden ser los tuyos!</div>
+    <div class="premios-grid" id="premiosGrid"></div>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:1rem;font-size:.78rem;color:var(--txt2)">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#2ECC71;border-radius:3px;margin-right:4px;vertical-align:middle"></span>Disponible</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#E74C3C;border-radius:3px;margin-right:4px;vertical-align:middle"></span>Ya ganado</span>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-brand">@gustavoseijas95</div>
+    <div class="footer-txt">Rifas 100% transparentes — Tu número, tu sueño</div>
+    <a class="wa-btn" href="https://wa.me/573009648502?text=Hola%20Gustavo%2C%20quiero%20informaci%C3%B3n%20sobre%20la%20rifa" target="_blank">
+      📱 WhatsApp de soporte
+    </a>
+    <div class="dev-link">
+      ¿Te interesa un sistema de rifas como este?
+      <a href="https://wa.me/573145788337?text=Hola%2C%20me%20interesa%20un%20sistema%20de%20rifas%20como%20el%20de%20gustavoseijas95" target="_blank">Escríbeme aquí →</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ VERIFICAR MODAL ══ -->
+<div class="modal-wrap" id="verifModal">
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="cerrarVerificar()">✕</button>
+    <div class="modal-title">🔍 VERIFICAR MIS TICKETS</div>
+    <p style="font-size:.85rem;color:var(--txt2);text-align:center;margin-bottom:1.2rem">Ingresa tu WhatsApp o correo para ver tus números</p>
+    <label class="form-label">Número de WhatsApp o correo</label>
+    <input class="form-input" id="verifInput" placeholder="Ej: +584140000000 o correo@gmail.com" type="text" onkeydown="if(event.key==='Enter')buscarTickets()">
+    <div style="font-size:.75rem;color:var(--txt2);margin-top:-.5rem;margin-bottom:1rem">WhatsApp con código de país — ejemplo: +58414... / +573...</div>
+    <div style="text-align:center;margin-bottom:1rem">
+      <button class="btn-next" style="flex:none;width:100%" onclick="buscarTickets()" id="btnBuscar">Buscar mis tickets →</button>
+    </div>
+    <div id="verifResultado" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ══ PURCHASE MODAL ══ -->
+<div class="modal-wrap" id="purchaseModal">
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="cerrarComprar()">✕</button>
+
+    <!-- STEP 1: Cantidad -->
+    <div id="pStep1">
+      <div class="modal-title">🎫 ELIGE TUS TICKETS</div>
+      <div class="qty-box">
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="cambiarQty(-1)">−</button>
+          <div><div class="qty-val" id="qtyVal">1</div><div class="qty-lbl">Tickets</div></div>
+          <button class="qty-btn" onclick="cambiarQty(1)">+</button>
+        </div>
+        <div class="price-box" style="margin-top:.8rem">
+          <div class="price-unit" id="precioUnitLabel">1 ticket = $0 COP</div>
+          <div class="price-total" id="precioTotal">$0</div>
+          <div class="price-currency">PESOS COLOMBIANOS</div>
+        </div>
+        <div class="quick-btns">
+          <div class="quick-btn" onclick="setQty(5)">5<br><small style="color:var(--green);font-size:.65rem" id="qp5"></small></div>
+          <div class="quick-btn" onclick="setQty(10)">10<br><small style="color:var(--green);font-size:.65rem" id="qp10"></small></div>
+          <div class="quick-btn" onclick="setQty(20)">20<br><small style="color:var(--green);font-size:.65rem" id="qp20"></small></div>
+          <div class="quick-btn" onclick="setQty(50)">50<br><small style="color:var(--green);font-size:.65rem" id="qp50"></small></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-next" style="flex:1" onclick="irStep(2)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Datos personales -->
+    <div id="pStep2" style="display:none">
+      <div class="modal-title">👤 TUS DATOS</div>
+      <label class="form-label">Nombre y Apellido</label>
+      <input class="form-input" id="pNombre" placeholder="¿Quién será el ganador?" maxlength="80">
+      <label class="form-label">WhatsApp (+57)</label>
+      <input class="form-input" id="pWhatsapp" type="tel" placeholder="+57 300 000 0000" maxlength="15">
+      <label class="form-label">Cédula de ciudadanía</label>
+      <input class="form-input" id="pCedula" type="number" placeholder="Número de cédula">
+      <label class="form-label">Correo electrónico (opcional)</label>
+      <input class="form-input" id="pEmail" type="email" placeholder="Para enviarte confirmación">
+      <div class="modal-foot">
+        <button class="btn-back" onclick="irStep(1)">← Atrás</button>
+        <button class="btn-next" onclick="validarStep2()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Pago -->
+    <div id="pStep3" style="display:none">
+      <div class="modal-title">💳 MÉTODO DE PAGO</div>
+      <div class="pay-grid">
+        <div class="pay-card nequi" onclick="selectPago('nequi',this)"><div class="pay-icon">💜</div><div class="pay-name" style="color:#E91E8C">Nequi</div></div>
+        <div class="pay-card daviplata" onclick="selectPago('daviplata',this)"><div class="pay-icon">❤️</div><div class="pay-name" style="color:#E52B20">Daviplata</div></div>
+        <div class="pay-card breb" onclick="selectPago('breb',this)"><div class="pay-icon">🔑</div><div class="pay-name" style="color:#FFC300">Bre-B</div></div>
+        <div class="pay-card binance" onclick="selectPago('binance',this)"><div class="pay-icon">🟡</div><div class="pay-name" style="color:#F3BA2F">Binance</div></div>
+      </div>
+      <div class="pay-info-box" id="payInfoBox">
+        <div class="pay-info-lbl" id="payInfoLbl"></div>
+        <div class="pay-info-num" id="payInfoNum"></div>
+        <div style="font-size:.78rem;color:var(--txt2);margin-top:.4rem">Transfiere exactamente <strong id="payInfoTotal"></strong> y sube el comprobante</div>
+      </div>
+      <label class="form-label">Referencia de transferencia</label>
+      <input class="form-input" id="pReferencia" placeholder="Últimos 4–6 dígitos de la operación">
+      <div class="upload-box">
+        <div class="upload-box-lbl">📸 Comprobante de pago</div>
+        <div class="upload-box-sub">Foto o captura de la transferencia — obligatorio</div>
+        <label class="upload-btn">📷 Seleccionar foto<input type="file" id="compInput" accept="image/*" style="display:none" onchange="previewComp(this)"></label>
+        <img id="compPreview" class="upload-preview">
+        <div class="upload-ok" id="compOk">✅ Comprobante listo</div>
+      </div>
+      <div style="text-align:center;font-size:.72rem;color:var(--txt2);margin-bottom:.5rem">🔒 Transacción 100% segura — tus datos están protegidos</div>
+      <div class="modal-foot">
+        <button class="btn-back" onclick="irStep(2)">← Atrás</button>
+        <button class="btn-next" id="btnFinalizar" onclick="finalizarCompra()" disabled>✅ FINALIZAR RESERVA</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Confirmación -->
+    <div id="pStep4" style="display:none">
+      <div class="confirm-wrap">
+        <div class="confirm-icon">🎉</div>
+        <div class="confirm-title">¡RESERVA EXITOSA!</div>
+        <div class="confirm-sub">Tu comprobante fue recibido. Gustavo verificará el pago y tus números quedarán confirmados.</div>
+        <div class="numeros-box">
+          <div class="numeros-title">🎫 Tus números de la suerte</div>
+          <div class="numeros-grid" id="numerosAsignados"></div>
+        </div>
+        <div style="background:rgba(255,85,0,.08);border:1px solid rgba(255,85,0,.2);border-radius:12px;padding:.9rem;font-size:.82rem;color:var(--txt2);margin-bottom:1rem;text-align:left">
+          ⚠️ <strong>Importante:</strong> Tus números están <strong>reservados</strong> hasta que Gustavo confirme el pago. Recibirás aviso por WhatsApp.
+        </div>
+        <a class="confirm-wa" id="confirmWaLink" href="#" target="_blank">📱 Escribir a Gustavo</a>
+        <div style="margin-top:1rem">
+          <button class="btn-next" style="flex:none;width:100%" onclick="cerrarComprar()">← Volver al inicio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// SUPABASE — reemplazar con las credenciales reales
+// ══════════════════════════════════════════════
+const SUPABASE_URL = 'https://pecdwxhtaplzjafufiks.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_C-wCdm6KyNSbyvkFNEOlWQ_AJHoEHZH';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+let cfg = {
+  precio_ticket: 5000,
+  hero_tipo: 'imagen',
+  hero_url: '',
+  hero_titulo: 'CUMPLIENDO SUEÑOS',
+  hero_subtitulo: 'PARTICIPA Y GANA CON GUSTAVO',
+  nequi_numero: '',
+  daviplata_numero: '',
+  breb_numero: '',
+  binance_id: '',
+  total_tickets: 200,
+  rifa_nombre: 'Gran Rifa de Moto',
+  admin_password: 'gustavo2025',
+  facebook_url: '',
+  instagram_url: '',
+  youtube_url: ''
+};
+
+async function cargarConfig() {
+  try {
+    const { data } = await sb.from('config').select('*');
+    if (data) data.forEach(r => { cfg[r.clave] = r.valor; });
+  } catch(e) {}
+  aplicarConfig();
+}
+
+function fmt(n) { return '$' + Number(n).toLocaleString('es-CO'); }
+
+function aplicarConfig() {
+  // Hero
+  const titulo = cfg.hero_titulo || 'CUMPLIENDO SUEÑOS';
+  const subtit = cfg.hero_subtitulo || 'PARTICIPA Y GANA CON GUSTAVO';
+  const tituloEl = document.getElementById('heroTitle');
+  const subtitEl = document.getElementById('heroSubtitle');
+  if (tituloEl) tituloEl.innerHTML = titulo.replace(' ', '<br>');
+  if (subtitEl) subtitEl.textContent = subtit;
+
+  // Redes sociales en drawer
+  const fbEl = document.getElementById('drawerFb');
+  const igEl = document.getElementById('drawerIg');
+  const ytEl = document.getElementById('drawerYt');
+  if (fbEl && cfg.facebook_url) fbEl.href = cfg.facebook_url;
+  if (igEl && cfg.instagram_url) igEl.href = cfg.instagram_url;
+  if (ytEl && cfg.youtube_url) ytEl.href = cfg.youtube_url;
+
+  // Hero media
+  const img = document.getElementById('heroImg');
+  const vid = document.getElementById('heroVid');
+  if (cfg.hero_url) {
+    if (cfg.hero_tipo === 'video') {
+      img.style.display = 'none';
+      vid.src = cfg.hero_url;
+      vid.style.display = 'block';
+    } else {
+      vid.style.display = 'none';
+      img.src = cfg.hero_url;
+      img.style.display = 'block';
+    }
+  }
+
+  // Precio
+  const precio = Number(cfg.precio_ticket) || 5000;
+  document.getElementById('stripPrecio').textContent = fmt(precio);
+  actualizarPrecio();
+  actualizarQuickBtns();
+  // Premios intermedios
+  mostrarPremiosPublicos();
+  mostrarPremiosActuales();
+}
+
+// ══════════════════════════════════════════════
+// ESTADO COMPRA
+// ══════════════════════════════════════════════
+let pState = {
+  qty: 1,
+  nombre: '', whatsapp: '', cedula: '', email: '',
+  metodoPago: null,
+  referencia: '',
+  comprobanteFile: null,
+  comprobanteUrl: null,
+  enviando: false,
+  numerosAsignados: []
+};
+
+// ══════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════
+// ── DRAWER ──
+function abrirDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── VERIFICAR BOLETO ──
+function abrirVerificar() {
+  document.getElementById('verifModal').classList.add('open');
+  document.getElementById('verifResultado').style.display = 'none';
+  document.getElementById('verifInput').value = '';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('verifInput').focus(), 300);
+}
+function cerrarVerificar() {
+  document.getElementById('verifModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+async function buscarTickets() {
+  const q = document.getElementById('verifInput').value.trim();
+  if (!q) return;
+  const res = document.getElementById('verifResultado');
+  const btn = document.getElementById('btnBuscar');
+  btn.textContent = '⏳ Buscando...';
+  btn.disabled = true;
+  res.style.display = 'none';
+
+  const { data } = await sb.from('boletos')
+    .select('nombre,numeros_asignados,cantidad,estado,created_at')
+    .or(`whatsapp.ilike.%${q}%,email.ilike.%${q}%`)
+    .neq('estado', 'rechazado');
+
+  btn.textContent = 'Buscar mis tickets →';
+  btn.disabled = false;
+  res.style.display = 'block';
+
+  if (!data || data.length === 0) {
+    res.innerHTML = `<div style="text-align:center;padding:1.2rem;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);border-radius:14px">
+      <div style="font-size:2rem;margin-bottom:.5rem">😕</div>
+      <div style="font-weight:800;color:var(--red);margin-bottom:.3rem">No encontramos resultados</div>
+      <div style="font-size:.82rem;color:var(--txt2)">Verifica que el WhatsApp o correo sea el mismo con el que compraste</div>
+    </div>`;
+    return;
+  }
+
+  const todosNums = data.flatMap(b => b.numeros_asignados || []).sort((a,b)=>a-b);
+  const nombre = data[0].nombre;
+  const aprobados = data.filter(b=>b.estado==='aprobado').flatMap(b=>b.numeros_asignados||[]);
+  const pendientes = data.filter(b=>b.estado==='pendiente').flatMap(b=>b.numeros_asignados||[]);
+
+  res.innerHTML = `
+    <div style="background:rgba(46,204,113,.08);border:1.5px solid rgba(46,204,113,.3);border-radius:14px;padding:1.2rem;margin-bottom:.8rem">
+      <div style="font-weight:800;color:var(--green);margin-bottom:.2rem">✅ ¡Encontramos tus tickets!</div>
+      <div style="font-size:.82rem;color:var(--txt2)">Titular: <strong style="color:var(--txt)">${nombre}</strong></div>
+    </div>
+    ${aprobados.length > 0 ? `
+    <div style="margin-bottom:.8rem">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--green);margin-bottom:.6rem">✅ Confirmados (${aprobados.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem">${aprobados.map(n=>`<div style="background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;padding:.3rem .8rem;border-radius:8px;box-shadow:0 3px 10px rgba(46,204,113,.3)">${numPad(n)}</div>`).join('')}</div>
+    </div>` : ''}
+    ${pendientes.length > 0 ? `
+    <div style="margin-bottom:.8rem">
+      <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#F39C12;margin-bottom:.6rem">⏳ Pendientes de confirmación (${pendientes.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.4rem">${pendientes.map(n=>`<div style="background:rgba(243,156,18,.15);border:1.5px solid #F39C12;color:#F39C12;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;padding:.3rem .8rem;border-radius:8px">${numPad(n)}</div>`).join('')}</div>
+    </div>` : ''}
+    <div style="font-size:.78rem;color:var(--txt2);text-align:center;margin-top:.5rem">Total: <strong>${todosNums.length} ticket(s)</strong></div>
+  `;
+}
+
+// ── THEME ──
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('rifa_theme', isLight ? 'light' : 'dark');
+}
+function initTheme() {
+  const t = localStorage.getItem('rifa_theme') || 'dark';
+  if (t === 'light') { document.body.classList.add('light'); const btn = document.getElementById('themeBtn'); if(btn) btn.textContent = '☀️'; }
+}
+
+// ══════════════════════════════════════════════
+// COMPRA — MODAL
+// ══════════════════════════════════════════════
+function abrirComprar() {
+  document.getElementById('purchaseModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  irStep(1);
+  actualizarPrecio();
+}
+function cerrarComprar() {
+  document.getElementById('purchaseModal').classList.remove('open');
+  document.body.style.overflow = '';
+  resetPurchase();
+}
+
+function irStep(n) {
+  [1,2,3,4].forEach(i => { const el = document.getElementById('pStep'+i); if(el) el.style.display = 'none'; });
+  const step = document.getElementById('pStep'+n);
+  if (step) step.style.display = 'block';
+}
+
+function resetPurchase() {
+  pState = { qty:1, nombre:'', whatsapp:'', cedula:'', email:'', metodoPago:null, referencia:'', comprobanteFile:null, comprobanteUrl:null, enviando:false, numerosAsignados:[] };
+  document.getElementById('qtyVal').textContent = '1';
+  ['pNombre','pWhatsapp','pCedula','pEmail','pReferencia'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('sel'));
+  document.getElementById('payInfoBox').classList.remove('show');
+  const p = document.getElementById('compPreview'); if(p){ p.style.display='none'; p.src=''; }
+  const ok = document.getElementById('compOk'); if(ok) ok.style.display='none';
+  const inp = document.getElementById('compInput'); if(inp) inp.value='';
+  actualizarPrecio();
+}
+
+// ══════════════════════════════════════════════
+// CANTIDAD
+// ══════════════════════════════════════════════
+function cambiarQty(delta) {
+  const nv = pState.qty + delta;
+  if (nv > 200) { mostrarAlert200(); return; }
+  if (nv < 1) return;
+  pState.qty = nv;
+  document.getElementById('qtyVal').textContent = nv;
+  actualizarPrecio();
+}
+function setQty(n) {
+  if (n > 200) { mostrarAlert200(); return; }
+  pState.qty = n;
+  document.getElementById('qtyVal').textContent = n;
+  actualizarPrecio();
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('sel'));
+}
+function actualizarPrecio() {
+  const precio = Number(cfg.precio_ticket) || 5000;
+  const total = precio * pState.qty;
+  const unitEl = document.getElementById('precioUnitLabel');
+  const totEl = document.getElementById('precioTotal');
+  if (unitEl) unitEl.textContent = `1 ticket = ${fmt(precio)} COP`;
+  if (totEl) totEl.textContent = fmt(total);
+  const ptEl = document.getElementById('payInfoTotal');
+  if (ptEl) ptEl.textContent = fmt(total);
+}
+function actualizarQuickBtns() {
+  const precio = Number(cfg.precio_ticket) || 5000;
+  [5,10,20,50].forEach(n => {
+    const el = document.getElementById('qp'+n);
+    if (el) el.textContent = fmt(precio*n);
+  });
+}
+function mostrarAlert200() {
+  document.getElementById('alert200').classList.add('open');
+}
+function cerrarAlert200() {
+  document.getElementById('alert200').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+// STEP 2 — VALIDACIÓN
+// ══════════════════════════════════════════════
+function validarStep2() {
+  const nombre = document.getElementById('pNombre').value.trim();
+  const wa = document.getElementById('pWhatsapp').value.trim();
+  const cedula = document.getElementById('pCedula').value.trim();
+  if (!nombre) { alert('Ingresa tu nombre y apellido'); return; }
+  if (!wa || wa.length < 10) { alert('Ingresa tu número de WhatsApp'); return; }
+  if (!cedula) { alert('Ingresa tu número de cédula'); return; }
+  pState.nombre = nombre;
+  pState.whatsapp = wa;
+  pState.cedula = cedula;
+  pState.email = document.getElementById('pEmail').value.trim();
+  irStep(3);
+}
+
+// ══════════════════════════════════════════════
+// STEP 3 — PAGO
+// ══════════════════════════════════════════════
+const PAY_LABELS = { nequi:'Nequi', daviplata:'Daviplata', breb:'Bre-B', binance:'Binance Pay' };
+const PAY_CFG_KEYS = { nequi:'nequi_numero', daviplata:'daviplata_numero', breb:'breb_numero', binance:'binance_id' };
+
+function selectPago(metodo, card) {
+  pState.metodoPago = metodo;
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('sel'));
+  card.classList.add('sel');
+  const box = document.getElementById('payInfoBox');
+  const lbl = document.getElementById('payInfoLbl');
+  const num = document.getElementById('payInfoNum');
+  const key = PAY_CFG_KEYS[metodo];
+  const valor = cfg[key] || '(no configurado)';
+  lbl.textContent = 'Pagar con ' + PAY_LABELS[metodo];
+  num.textContent = valor;
+  box.classList.add('show');
+  actualizarBtnFinalizar();
+}
+
+function previewComp(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pState.comprobanteFile = file;
+  const prev = document.getElementById('compPreview');
+  const ok = document.getElementById('compOk');
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+  ok.style.display = 'block';
+  actualizarBtnFinalizar();
+}
+
+function actualizarBtnFinalizar() {
+  const ref = document.getElementById('pReferencia').value.trim();
+  const ok = pState.metodoPago && pState.comprobanteFile;
+  document.getElementById('btnFinalizar').disabled = !ok;
+}
+
+document.getElementById('pReferencia')?.addEventListener('input', actualizarBtnFinalizar);
+
+// ══════════════════════════════════════════════
+// FINALIZAR COMPRA
+// ══════════════════════════════════════════════
+async function finalizarCompra() {
+  if (pState.enviando) return;
+  pState.enviando = true;
+  const btn = document.getElementById('btnFinalizar');
+  btn.textContent = '⏳ Procesando...';
+  btn.disabled = true;
+
+  try {
+    // Verificar disponibilidad
+    const disponibles = await getTicketsDisponibles();
+    if (pState.qty > disponibles) {
+      alert(`Solo quedan ${disponibles} tickets disponibles. Reduce la cantidad.`);
+      btn.textContent = '✅ FINALIZAR RESERVA';
+      btn.disabled = false;
+      pState.enviando = false;
+      return;
+    }
+
+    // Subir comprobante
+    let compUrl = null;
+    if (pState.comprobanteFile) {
+      const file = pState.comprobanteFile;
+      const ext = file.type.includes('png') ? 'png' : file.type.includes('webp') ? 'webp' : 'jpg';
+      const fileName = `comp_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await sb.storage.from('rifa-comprobantes').upload(fileName, file, { upsert: true, contentType: file.type });
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('rifa-comprobantes').getPublicUrl(fileName);
+        compUrl = urlData.publicUrl;
+      }
+    }
+
+    // Asignar números
+    const numeros = await asignarNumeros(pState.qty);
+
+    // Guardar en Supabase
+    const { error } = await sb.from('boletos').insert({
+      nombre: pState.nombre,
+      whatsapp: pState.whatsapp,
+      cedula: pState.cedula,
+      email: pState.email || null,
+      cantidad: pState.qty,
+      numeros_asignados: numeros,
+      metodo_pago: pState.metodoPago,
+      referencia: document.getElementById('pReferencia').value.trim(),
+      comprobante_url: compUrl,
+      total: Number(cfg.precio_ticket) * pState.qty,
+      estado: 'pendiente'
+    });
+
+    if (error) throw error;
+
+    pState.numerosAsignados = numeros;
+    mostrarConfirmacion(numeros);
+    actualizarContadores();
+
+  } catch(e) {
+    alert('Hubo un problema. Por favor escribe a Gustavo por WhatsApp: +573009648502');
+    btn.textContent = '✅ FINALIZAR RESERVA';
+    btn.disabled = false;
+  }
+
+  pState.enviando = false;
+}
+
+async function getTicketsDisponibles() {
+  const { data } = await sb.from('boletos').select('cantidad').in('estado', ['pendiente','aprobado']);
+  const vendidos = data ? data.reduce((s,r) => s + (r.cantidad||0), 0) : 0;
+  return (Number(cfg.total_tickets) || 200) - vendidos;
+}
+
+async function asignarNumeros(qty) {
+  const { data } = await sb.from('boletos').select('numeros_asignados').in('estado', ['pendiente','aprobado']);
+  const usados = new Set();
+  if (data) data.forEach(r => (r.numeros_asignados||[]).forEach(n => usados.add(n)));
+  const total = Number(cfg.total_tickets) || 9999;
+  const disponibles = [];
+  for (let i = 1; i <= total; i++) {
+    if (!usados.has(i)) disponibles.push(i);
+  }
+  for (let i = disponibles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]];
+  }
+  return disponibles.slice(0, qty).sort((a, b) => a - b);
+}
+
+function numPad(n) { return String(n).padStart(3,'0'); }
+
+function mostrarConfirmacion(numeros) {
+  const grid = document.getElementById('numerosAsignados');
+  grid.innerHTML = numeros.map(n => `<div class="numero-chip">${numPad(n)}</div>`).join('');
+  const msg = encodeURIComponent(`Hola Gustavo! Hice una reserva de ${pState.qty} ticket(s) para la rifa. Mi nombre: ${pState.nombre} | Cédula: ${pState.cedula} | Mis números: ${numeros.map(numPad).join(', ')}`);
+  document.getElementById('confirmWaLink').href = `https://wa.me/573009648502?text=${msg}`;
+  irStep(4);
+
+  // Verificar números dorados
+  try {
+    const dorados = JSON.parse(cfg.premios_dorados || '[]');
+    const ganados = numeros.filter(n => dorados.includes(n));
+    if (ganados.length > 0) {
+      setTimeout(() => mostrarDorado(ganados), 800);
+    }
+  } catch(e) {}
+}
+
+function mostrarDorado(nums) {
+  document.getElementById('doradoNums').innerHTML = nums.map(n =>
+    `<div style="background:gold;color:#000;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;padding:.4rem 1rem;border-radius:10px">${numPad(n)}</div>`
+  ).join('');
+  document.getElementById('doradoModal').style.display = 'flex';
+  // Notificar a Gustavo por WhatsApp
+  const rifaNombre = cfg.rifa_nombre || 'la rifa';
+  const msgG = encodeURIComponent(`🏆 ¡NÚMERO DORADO! 🏆\n\n${pState.nombre} (${pState.whatsapp}) acaba de comprar y le tocó el número dorado: ${nums.map(numPad).join(', ')}\n\nRifa: ${rifaNombre}`);
+  window.open(`https://wa.me/573009648502?text=${msgG}`, '_blank');
+}
+
+function cerrarDoradoModal() {
+  document.getElementById('doradoModal').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// CONTADORES
+// ══════════════════════════════════════════════
+async function actualizarContadores() {
+  try {
+    const { data } = await sb.from('boletos').select('cantidad,estado');
+    const total = Number(cfg.total_tickets) || 200;
+    const aprobados = (data||[]).filter(r=>r.estado==='aprobado').reduce((s,r)=>s+(r.cantidad||0),0);
+    const pendientes = (data||[]).filter(r=>r.estado==='pendiente').reduce((s,r)=>s+(r.cantidad||0),0);
+    const vendidos = aprobados + pendientes;
+    const disp = Math.max(0, total - vendidos);
+    const el1 = document.getElementById('stripVendidos'); if(el1) el1.textContent = vendidos;
+    const el2 = document.getElementById('stripDisp'); if(el2) el2.textContent = disp;
+    const elAvail = document.getElementById('availTxt');
+    if (elAvail) elAvail.textContent = disp > 0 ? 'TICKETS DISPONIBLES AHORA' : '🔴 TICKETS AGOTADOS';
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════
+let adminLogueado = false;
+function abrirAdmin() {
+  document.getElementById('adminWrap').classList.add('open');
+  if (!adminLogueado) {
+    document.getElementById('adminLoginView').style.display = 'flex';
+    document.getElementById('adminDashView').style.display = 'none';
+  }
+}
+function cerrarAdmin() {
+  document.getElementById('adminWrap').classList.remove('open');
+}
+function adminLogin() {
+  const pass = document.getElementById('adminPassInput').value;
+  if (pass === cfg.admin_password) {
+    const dia = new Date().getDate();
+    if (dia === 10) {
+      document.getElementById('adminLoginView').innerHTML = `
+        <div style="text-align:center;padding:2rem">
+          <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+          <div style="font-weight:900;font-size:1.2rem;margin-bottom:.5rem">Acceso bloqueado</div>
+          <div style="font-size:.85rem;color:var(--txt2)">Hoy es día de pago del servicio.<br>Comunícate con el administrador para renovar.</div>
+        </div>`;
+      return;
+    }
+    adminLogueado = true;
+    document.getElementById('adminLoginView').style.display = 'none';
+    document.getElementById('adminDashView').style.display = 'block';
+    cargarAdminConfig();
+    cargarBoletos('todos');
+    cargarStats();
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+    setTimeout(() => document.getElementById('adminErr').style.display = 'none', 2000);
+  }
+}
+
+function setAdminTab(tab, el) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'boletos') cargarBoletos(window._filtroActual || 'todos');
+  if (tab === 'stats') cargarStats();
+}
+
+function cargarAdminConfig() {
+  document.getElementById('cfgTitulo').value = cfg.hero_titulo || '';
+  document.getElementById('cfgSubtitulo').value = cfg.hero_subtitulo || '';
+  document.getElementById('cfgRifaNombre').value = cfg.rifa_nombre || '';
+  document.getElementById('cfgPrecio').value = cfg.precio_ticket || '';
+  document.getElementById('cfgTotal').value = cfg.total_tickets || 200;
+  document.getElementById('cfgNequi').value = cfg.nequi_numero || '';
+  document.getElementById('cfgDaviplata').value = cfg.daviplata_numero || '';
+  document.getElementById('cfgBreb').value = cfg.breb_numero || '';
+  document.getElementById('cfgBinance').value = cfg.binance_id || '';
+  const tipo = cfg.hero_tipo || 'imagen';
+  document.getElementById('btnTipoImg').classList.toggle('active', tipo === 'imagen');
+  document.getElementById('btnTipoVid').classList.toggle('active', tipo === 'video');
+}
+
+let heroTipoActual = 'imagen';
+function setHeroTipo(tipo, btn) {
+  heroTipoActual = tipo;
+  document.querySelectorAll('.media-tipo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('heroFileInput').accept = tipo === 'video' ? 'video/*' : 'image/*';
+}
+
+function previewHeroMedia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const wrap = document.getElementById('heroPreviewWrap');
+  const imgEl = document.getElementById('heroPreviewImg');
+  const vidEl = document.getElementById('heroPreviewVid');
+  wrap.style.display = 'block';
+  if (heroTipoActual === 'video') {
+    imgEl.style.display = 'none';
+    vidEl.src = url;
+    vidEl.style.display = 'block';
+  } else {
+    vidEl.style.display = 'none';
+    imgEl.src = url;
+    imgEl.style.display = 'block';
+  }
+}
+
+async function guardarHero() {
+  const input = document.getElementById('heroFileInput');
+  const titulo = document.getElementById('cfgTitulo').value.trim();
+  const subtitulo = document.getElementById('cfgSubtitulo').value.trim();
+  let heroUrl = cfg.hero_url;
+
+  if (input.files[0]) {
+    const file = input.files[0];
+    const ext = file.name.split('.').pop();
+    const fileName = `hero_${Date.now()}.${ext}`;
+    const { error } = await sb.storage.from('rifa-media').upload(fileName, file, { upsert: true, contentType: file.type });
+    if (!error) {
+      const { data } = sb.storage.from('rifa-media').getPublicUrl(fileName);
+      heroUrl = data.publicUrl;
+    }
+  }
+
+  await guardarCfg({ hero_tipo: heroTipoActual, hero_url: heroUrl, hero_titulo: titulo, hero_subtitulo: subtitulo });
+  cfg.hero_tipo = heroTipoActual; cfg.hero_url = heroUrl; cfg.hero_titulo = titulo; cfg.hero_subtitulo = subtitulo;
+  aplicarConfig();
+  alert('✅ Hero guardado');
+}
+
+// ══ NUEVA RIFA ═══════════════════════════════════════
+function iniciarNuevaRifa() {
+  document.getElementById('nuevaRifaPass').value = '';
+  document.getElementById('nuevaRifaErr').style.display = 'none';
+  const m = document.getElementById('nuevaRifaModal');
+  m.style.display = 'flex';
+}
+function cerrarModalNuevaRifa() {
+  document.getElementById('nuevaRifaModal').style.display = 'none';
+}
+async function confirmarNuevaRifa() {
+  const pass = document.getElementById('nuevaRifaPass').value;
+  if (pass !== (cfg.admin_password || 'gustavo2025')) {
+    document.getElementById('nuevaRifaErr').style.display = 'block';
+    return;
+  }
+  cerrarModalNuevaRifa();
+  try {
+    // Borrar todos los boletos
+    await sb.from('boletos').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    // Borrar premios intermedios
+    await sb.from('config').upsert({clave:'premios_intermedios',valor:''},{onConflict:'clave'});
+    cfg.premios_intermedios = '';
+    mostrarPremiosPublicos();
+    mostrarPremiosActuales();
+    _sorteoNums = [];
+    document.getElementById('sorteoResultado').style.display = 'none';
+    await actualizarContadores();
+    alert('✅ Nueva rifa iniciada. Los boletos han sido eliminados.');
+  } catch(e) {
+    alert('Error al reiniciar: ' + e.message);
+  }
+}
+
+// ══ SORTEOS INTERMEDIOS ══════════════════════════════
+let _sorteoQty = 0;
+let _sorteoNums = [];
+
+function setSorteoQty(n, el) {
+  _sorteoQty = n;
+  document.querySelectorAll('.sorteo-qty-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('btnSortear').disabled = false;
+}
+
+async function realizarSorteo() {
+  if (!_sorteoQty) return;
+  const { data } = await sb.from('boletos').select('numeros_asignados,nombre').eq('estado','aprobado');
+  if (!data || !data.length) { alert('No hay boletos aprobados aún.'); return; }
+  const pool = data.flatMap(b => (b.numeros_asignados||[]).map(n=>({num:n,nombre:b.nombre})));
+  if (pool.length < _sorteoQty) { alert(`Solo hay ${pool.length} número(s) aprobado(s).`); return; }
+  const shuffled = [...pool];
+  for (let i = shuffled.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+  }
+  _sorteoNums = shuffled.slice(0, _sorteoQty);
+  const container = document.getElementById('sorteoNums');
+  container.innerHTML = _sorteoNums.map(x=>
+    `<div style="background:linear-gradient(135deg,var(--or),#ff8c42);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;padding:.35rem .9rem;border-radius:10px;text-align:center">
+      <div>${numPad(x.num)}</div>
+      <div style="font-size:.6rem;font-weight:400;letter-spacing:1px;opacity:.9">${x.nombre||''}</div>
+    </div>`
+  ).join('');
+  document.getElementById('sorteoResultado').style.display = 'block';
+}
+
+async function publicarPremios() {
+  if (!_sorteoNums.length) return;
+  const valor = JSON.stringify(_sorteoNums.map(x=>({num:x.num,nombre:x.nombre||''})));
+  await sb.from('config').upsert({clave:'premios_intermedios',valor},{onConflict:'clave'});
+  cfg.premios_intermedios = valor;
+  mostrarPremiosPublicos();
+  mostrarPremiosActuales();
+  alert('✅ Premios publicados en la página pública.');
+}
+
+async function limpiarPremios() {
+  if (!confirm('¿Quitar los premios de la página pública?')) return;
+  await sb.from('config').upsert({clave:'premios_intermedios',valor:''},{onConflict:'clave'});
+  cfg.premios_intermedios = '';
+  _sorteoNums = [];
+  document.getElementById('sorteoResultado').style.display = 'none';
+  mostrarPremiosPublicos();
+  mostrarPremiosActuales();
+}
+
+function mostrarPremiosActuales() {
+  const el = document.getElementById('premiosActuales');
+  if (!el) return;
+  let lista = [];
+  try { lista = JSON.parse(cfg.premios_intermedios||'[]'); } catch(e){}
+  if (!lista.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--or);margin-bottom:.5rem">Publicados actualmente</div>`
+    + lista.map(x=>`<div style="font-size:.85rem;padding:.2rem 0">🏆 ${numPad(x.num)} — ${x.nombre||''}</div>`).join('');
+}
+
+async function mostrarPremiosPublicos() {
+  const sec = document.getElementById('premiosSection');
+  const grid = document.getElementById('premiosGrid');
+  if (!sec || !grid) return;
+  if (cfg.dorados_publicados !== 'true') { sec.classList.remove('visible'); return; }
+  let dorados = [];
+  try { dorados = JSON.parse(cfg.premios_dorados||'[]'); } catch(e){}
+  if (!dorados.length) { sec.classList.remove('visible'); return; }
+  sec.classList.add('visible');
+  // Consultar cuáles ya fueron asignados
+  const { data } = await sb.from('boletos').select('numeros_asignados').not('estado','in','("rechazado","archivado")');
+  const asignados = new Set();
+  (data||[]).forEach(b => (b.numeros_asignados||[]).forEach(n => asignados.add(n)));
+  grid.innerHTML = dorados.map(n => {
+    const ganado = asignados.has(n);
+    const bg = ganado ? '#E74C3C' : '#2ECC71';
+    const label = ganado ? 'GANADO' : 'DISPONIBLE';
+    return `<div style="background:${bg};color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;padding:.5rem 1rem;border-radius:10px;text-align:center;box-shadow:0 3px 12px ${bg}55;min-width:70px">
+      <div>${numPad(n)}</div>
+      <div style="font-size:.5rem;letter-spacing:1.5px;opacity:.9">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+async function guardarConfigRifa() {
+  const nombre = document.getElementById('cfgRifaNombre').value.trim();
+  const precio = document.getElementById('cfgPrecio').value;
+  let total = parseInt(document.getElementById('cfgTotal').value);
+  if (total > 200) { alert('El máximo de tickets es 200'); return; }
+  await guardarCfg({ rifa_nombre: nombre, precio_ticket: precio, total_tickets: String(total) });
+  cfg.rifa_nombre = nombre; cfg.precio_ticket = precio; cfg.total_tickets = String(total);
+  aplicarConfig();
+  alert('✅ Configuración de rifa guardada');
+}
+
+async function guardarMetodosPago() {
+  const updates = {
+    nequi_numero: document.getElementById('cfgNequi').value.trim(),
+    daviplata_numero: document.getElementById('cfgDaviplata').value.trim(),
+    breb_numero: document.getElementById('cfgBreb').value.trim(),
+    binance_id: document.getElementById('cfgBinance').value.trim()
+  };
+  await guardarCfg(updates);
+  Object.assign(cfg, updates);
+  alert('✅ Métodos de pago guardados');
+}
+
+async function cambiarPassword() {
+  const p1 = document.getElementById('cfgPass1').value;
+  const p2 = document.getElementById('cfgPass2').value;
+  const msg = document.getElementById('passMsg');
+  if (!p1 || p1.length < 4) { msg.style.color = 'var(--red)'; msg.textContent = 'Mínimo 4 caracteres'; return; }
+  if (p1 !== p2) { msg.style.color = 'var(--red)'; msg.textContent = 'Las contraseñas no coinciden'; return; }
+  await guardarCfg({ admin_password: p1 });
+  cfg.admin_password = p1;
+  msg.style.color = 'var(--green)';
+  msg.textContent = '✅ Contraseña actualizada';
+  document.getElementById('cfgPass1').value = '';
+  document.getElementById('cfgPass2').value = '';
+  setTimeout(() => msg.textContent = '', 3000);
+}
+
+async function guardarCfg(updates) {
+  for (const [clave, valor] of Object.entries(updates)) {
+    await sb.from('config').upsert({ clave, valor: String(valor) }, { onConflict: 'clave' });
+  }
+}
+
+// ══════════════════════════════════════════════
+// BOLETOS ADMIN
+// ══════════════════════════════════════════════
+window._filtroActual = 'todos';
+let _todosLosBoletos = [];
+
+async function cargarBoletos(filtro) {
+  window._filtroActual = filtro;
+  const lista = document.getElementById('boletosLista');
+  lista.innerHTML = '<div style="text-align:center;color:var(--txt2);padding:2rem">Cargando...</div>';
+  try {
+    const { data } = await sb.from('boletos').select('*').order('created_at', { ascending: false });
+    _todosLosBoletos = data || [];
+    renderBoletos(filtro);
+  } catch(e) {
+    lista.innerHTML = '<div style="color:var(--red);text-align:center;padding:1rem">Error al cargar</div>';
+  }
+}
+
+function filtrarBoletos(filtro, btn) {
+  window._filtroActual = filtro;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoletos(filtro);
+}
+
+function renderBoletos(filtro) {
+  const lista = document.getElementById('boletosLista');
+  const items = filtro === 'todos' ? _todosLosBoletos : _todosLosBoletos.filter(b => b.estado === filtro);
+  if (!items.length) { lista.innerHTML = '<div style="text-align:center;color:var(--txt2);padding:2rem">Sin resultados</div>'; return; }
+  lista.innerHTML = items.map(b => {
+    const fecha = new Date(b.created_at).toLocaleDateString('es-CO');
+    const nums = (b.numeros_asignados||[]).map(n=>`<div class="boleto-num">${numPad(n)}</div>`).join('');
+    const compBtn = b.comprobante_url ? `<button class="btn-ver-comp" onclick="window.open('${b.comprobante_url}','_blank')">📷 Ver comprobante</button>` : '';
+    const aprobBtn = b.estado !== 'aprobado' ? `<button class="btn-aprobar" onclick="cambiarEstado('${b.id}','aprobado')">✅ Aprobar</button>` : '';
+    const rechBtn = b.estado !== 'rechazado' ? `<button class="btn-rechazar" onclick="cambiarEstado('${b.id}','rechazado')">❌ Rechazar</button>` : '';
+    return `<div class="boleto-card ${b.estado}">
+      <div class="boleto-head">
+        <div class="boleto-id">#${b.id.slice(-6).toUpperCase()}</div>
+        <div class="boleto-estado ${b.estado}">${b.estado}</div>
+      </div>
+      <div class="boleto-info">
+        👤 ${b.nombre} · 📱 ${b.whatsapp} · 🪪 ${b.cedula||'-'}<br>
+        💳 ${PAY_LABELS[b.metodo_pago]||b.metodo_pago} · Total: <strong>${fmt(b.total)}</strong> · ${b.cantidad} ticket(s)<br>
+        📅 ${fecha} · Ref: ${b.referencia||'-'}
+      </div>
+      <div class="boleto-numeros">${nums}</div>
+      <div class="boleto-actions">${aprobBtn}${rechBtn}${compBtn}</div>
+    </div>`;
+  }).join('');
+}
+
+async function cambiarEstado(id, estado) {
+  const boleto = _todosLosBoletos.find(b => b.id === id);
+  const { error } = await sb.from('boletos').update({ estado }).eq('id', id);
+  if (!error) {
+    _todosLosBoletos = _todosLosBoletos.map(b => b.id === id ? {...b, estado} : b);
+    renderBoletos(window._filtroActual);
+    cargarStats();
+    actualizarContadores();
+    if (estado === 'aprobado' && boleto) {
+      const nums = (boleto.numeros_asignados || []).map(n => numPad(n)).join(', ');
+      const rifaNombre = cfg.rifa_nombre || 'la rifa';
+      const msg = `¡Hola ${boleto.nombre}! 🎉 Tu pago ha sido *confirmado*.\n\nTus números de *${rifaNombre}* son:\n🎟️ ${nums}\n\n¡Mucha suerte! 🍀`;
+      const wa = (boleto.whatsapp || '').replace(/\D/g, '');
+      if (wa) window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// STATS ADMIN
+// ══════════════════════════════════════════════
+async function cargarStats() {
+  const { data } = await sb.from('boletos').select('cantidad,estado,total');
+  const total = Number(cfg.total_tickets) || 200;
+  const aprobados = (data||[]).filter(r=>r.estado==='aprobado');
+  const pendientes = (data||[]).filter(r=>r.estado==='pendiente');
+  const tAprobados = aprobados.reduce((s,r)=>s+(r.cantidad||0),0);
+  const tPendientes = pendientes.reduce((s,r)=>s+(r.cantidad||0),0);
+  const vendidos = tAprobados + tPendientes;
+  const disp = Math.max(0, total - vendidos);
+  const ingresos = aprobados.reduce((s,r)=>s+(Number(r.total)||0),0);
+  const pct = Math.round((tAprobados / total) * 100);
+  const el = id => document.getElementById(id);
+  if(el('stVendidos')) el('stVendidos').textContent = vendidos;
+  if(el('stDisponibles')) el('stDisponibles').textContent = disp;
+  if(el('stPendientes')) el('stPendientes').textContent = tPendientes;
+  if(el('stIngresos')) el('stIngresos').textContent = fmt(ingresos);
+  if(el('stPct')) el('stPct').textContent = pct + '%';
+  if(el('stBar')) el('stBar').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════════════
+// VERIFICAR NÚMERO
+// ══════════════════════════════════════════════
+async function verificarNumero() {
+  const num = parseInt(document.getElementById('verifNum').value);
+  const res = document.getElementById('verifResult');
+  if (!num || num < 1 || num > 200) { res.style.display='block'; res.innerHTML='<span style="color:var(--red)">Número inválido (1–200)</span>'; return; }
+  const { data } = await sb.from('boletos').select('*').contains('numeros_asignados',[num]).neq('estado','rechazado');
+  res.style.display = 'block';
+  if (data && data.length > 0) {
+    const b = data[0];
+    res.innerHTML = `<div style="color:var(--green);font-weight:800;margin-bottom:.4rem">✅ Número <strong>${numPad(num)}</strong> encontrado</div>
+    <div style="font-size:.82rem;color:var(--txt2)">Titular: <strong style="color:var(--txt)">${b.nombre}</strong><br>Cédula: ${b.cedula||'-'} · WhatsApp: ${b.whatsapp}<br>Estado: <strong style="color:${b.estado==='aprobado'?'var(--green)':'#F39C12'}">${b.estado}</strong></div>`;
+  } else {
+    res.innerHTML = `<div style="color:var(--txt2)">🎫 Número <strong>${numPad(num)}</strong> está <strong style="color:var(--green)">DISPONIBLE</strong></div>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// NAV SCROLL — ocultar antes de llegar al CTA
+// ══════════════════════════════════════════════
+(function(){
+  const nav = document.getElementById('mainNav');
+  const cta = document.querySelector('.btn-cta');
+  if(!nav || !cta) return;
+  window.addEventListener('scroll', function(){
+    const ctaTop = cta.getBoundingClientRect().top;
+    const navBottom = 40 + 120 + 20; // top + height + buffer
+    if(ctaTop <= navBottom){
+      nav.style.transform = 'translateY(-220px)';
+    } else {
+      nav.style.transform = 'translateY(0)';
+    }
+  }, {passive:true});
+})();
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+initTheme();
+cargarConfig().then(() => {
+  actualizarContadores();
+  if (new Date().getDate() === 10) {
+    document.body.innerHTML = `<div style="min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:sans-serif">
+      <div style="font-size:4rem;margin-bottom:1rem">🔒</div>
+      <div style="color:#fff;font-size:1.5rem;font-weight:900;margin-bottom:.8rem">Sitio temporalmente fuera de servicio</div>
+      <div style="color:rgba(255,255,255,.6);font-size:.9rem">Estamos realizando mantenimiento.<br>Vuelve pronto.</div>
+    </div>`;
+  }
+});
+</script>
+</body>
+</html>

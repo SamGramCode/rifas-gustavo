@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Gustavo Rifas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --or:#FF5500;--orl:#FF7700;
+  --bg:#F5F5F5;--bg2:#FFFFFF;--bg3:#EEEEEE;
+  --txt:#111111;--txt2:#666666;--brd:rgba(255,85,0,.2);
+  --card:rgba(0,0,0,.04);
+  --green:#27AE60;--red:#E74C3C;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--or);border-radius:3px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.login-box{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:2.5rem;width:100%;max-width:360px;text-align:center}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:3px;color:var(--or);margin-bottom:.2rem}
+.login-sub{font-size:.82rem;color:var(--txt2);margin-bottom:1.8rem}
+.login-input{width:100%;background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt);border-radius:10px;padding:.85rem 1rem;font-size:.95rem;margin-bottom:.8rem;transition:border .2s}
+.login-input:focus{border-color:rgba(255,85,0,.5)}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;padding:.9rem;border-radius:12px;font-weight:900;font-size:1rem;letter-spacing:.5px;box-shadow:0 4px 20px rgba(255,85,0,.3);transition:all .2s}
+.login-btn:hover{transform:translateY(-1px)}
+.login-err{color:var(--red);font-size:.82rem;margin-top:.5rem;display:none}
+.back-link{display:block;margin-top:1.2rem;font-size:.78rem;color:var(--txt2);text-decoration:none}
+.back-link:hover{color:var(--or)}
+
+/* DASHBOARD */
+.dash{display:none}
+.dash-nav{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--brd);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.dash-brand{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--or)}
+.dash-exit{background:transparent;border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .2s;text-decoration:none}
+.dash-exit:hover{border-color:var(--red);color:var(--red)}
+.dash-body{max-width:760px;margin:0 auto;padding:1.5rem}
+
+/* TABS */
+.tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:var(--bg2);border-radius:12px;padding:.4rem;overflow-x:auto}
+.tab{flex:1;min-width:70px;padding:.6rem .3rem;border-radius:8px;font-weight:800;font-size:.78rem;background:transparent;color:var(--txt2);cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap}
+.tab.active{background:var(--or);color:#fff}
+
+.section{display:none}
+.section.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.card-title{font-weight:900;font-size:.88rem;text-transform:uppercase;letter-spacing:1px;color:var(--or);margin-bottom:1rem}
+.row{margin-bottom:.9rem}
+.lbl{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin-bottom:.35rem;display:block}
+.inp{width:100%;background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt);border-radius:8px;padding:.7rem .9rem;font-size:.88rem;transition:border .2s}
+.inp:focus{border-color:rgba(255,85,0,.5)}
+.inp::placeholder{color:var(--txt2)}
+.save-btn{background:linear-gradient(135deg,var(--or),var(--orl));color:#fff;padding:.8rem 2rem;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;box-shadow:0 4px 15px rgba(255,85,0,.3);transition:all .2s}
+.save-btn:hover{transform:translateY(-1px)}
+
+/* MEDIA */
+.tipo-btns{display:flex;gap:.5rem;margin-bottom:.8rem}
+.tipo-btn{flex:1;padding:.5rem;border-radius:8px;border:1.5px solid var(--brd);background:transparent;color:var(--txt2);font-weight:800;font-size:.82rem;cursor:pointer;transition:all .2s}
+.tipo-btn.active{border-color:var(--or);background:rgba(255,85,0,.08);color:var(--or)}
+.upload-lbl{display:inline-block;background:var(--or);color:#fff;padding:.6rem 1.4rem;border-radius:8px;font-weight:800;font-size:.82rem;cursor:pointer;transition:background .2s}
+.upload-lbl:hover{background:var(--orl)}
+.media-prev{margin-top:.8rem;border-radius:10px;overflow:hidden;max-height:200px;display:none}
+.media-prev img,.media-prev video{width:100%;height:200px;object-fit:cover}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem}
+.stat{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;text-align:center}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--or);letter-spacing:1px;line-height:1}
+.stat-l{font-size:.72rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-top:.2rem}
+.bar{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-top:.8rem}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--or),var(--orl));border-radius:4px;transition:width .5s}
+
+/* BOLETOS */
+.filters{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.fbtn{background:var(--bg3);border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .2s}
+.fbtn.active{border-color:var(--or);color:var(--or);background:rgba(255,85,0,.08)}
+.boleto{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-bottom:.8rem}
+.boleto.pendiente{border-left:3px solid #F39C12}
+.boleto.aprobado{border-left:3px solid var(--green)}
+.boleto.rechazado{border-left:3px solid var(--red);opacity:.6}
+.b-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.b-id{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--or)}
+.b-estado{font-size:.7rem;font-weight:800;padding:.2rem .6rem;border-radius:50px;text-transform:uppercase}
+.b-estado.pendiente{background:rgba(243,156,18,.15);color:#F39C12}
+.b-estado.aprobado{background:rgba(46,204,113,.15);color:var(--green)}
+.b-estado.rechazado{background:rgba(231,76,60,.15);color:var(--red)}
+.b-info{font-size:.82rem;color:var(--txt2);margin-bottom:.5rem;line-height:1.6}
+.b-nums{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem}
+.b-num{background:rgba(255,85,0,.12);border:1px solid rgba(255,85,0,.3);color:var(--or);font-size:.72rem;font-weight:800;padding:.15rem .5rem;border-radius:6px}
+.b-acts{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-ap{background:rgba(46,204,113,.12);border:1.5px solid var(--green);color:var(--green);padding:.4rem .9rem;border-radius:8px;font-weight:800;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-ap:hover{background:var(--green);color:#fff}
+.btn-re{background:rgba(231,76,60,.08);border:1.5px solid var(--red);color:var(--red);padding:.4rem .9rem;border-radius:8px;font-weight:800;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-re:hover{background:var(--red);color:#fff}
+.btn-vc{background:rgba(255,85,0,.08);border:1.5px solid var(--brd);color:var(--txt2);padding:.4rem .9rem;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s}
+.btn-vc:hover{border-color:var(--or);color:var(--or)}
+
+/* VERIF */
+.verif-res{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-top:1rem;display:none}
+
+.msg{font-size:.82rem;margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-wrap" id="loginView">
+  <div class="login-box">
+    <div class="login-logo">ADMIN</div>
+    <div class="login-sub">Panel de propietario — @gustavoseijas95</div>
+    <input class="login-input" type="password" id="passInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Ingresar →</button>
+    <div class="login-err" id="loginErr">Contraseña incorrecta</div>
+    <a class="back-link" href="rifa.html">← Volver al sitio de la rifa</a>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="dash" id="dashView">
+  <div id="pagoBanner" style="display:none;background:#F39C12;color:#fff;padding:.75rem 1.2rem;font-size:.88rem;font-weight:800;text-align:center;position:sticky;top:0;z-index:300;letter-spacing:.3px"></div>
+  <div id="pagoBloqueo" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem">
+    <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+    <div style="color:#fff;font-size:1.4rem;font-weight:900;margin-bottom:.8rem">Acceso bloqueado</div>
+    <div style="color:rgba(255,255,255,.7);font-size:.9rem">Hoy es día de pago del servicio.<br>Comunícate con el administrador para renovar.</div>
+  </div>
+
+  <div class="dash-nav">
+    <div class="dash-brand">⚙️ ADMIN — GUSTAVO RIFAS</div>
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <button class="dash-exit" style="background:rgba(231,76,60,.12);border-color:#E74C3C;color:#E74C3C;font-weight:800" onclick="iniciarNuevaRifa()">🔄 Nueva Rifa</button>
+      <a class="dash-exit" href="rifa.html">← Ver rifa</a>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Rifa -->
+  <div id="nuevaRifaModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:1.5rem">
+    <div style="background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:2rem;width:100%;max-width:360px">
+      <div style="font-size:1.3rem;font-weight:900;margin-bottom:.5rem">🔄 Nueva Rifa</div>
+      <p style="font-size:.83rem;color:var(--txt2);margin-bottom:1.2rem">Esto borrará <strong>todos los boletos</strong> y los premios intermedios. La configuración y el hero se mantienen.<br><br>Escribe tu contraseña para confirmar:</p>
+      <input class="inp" type="password" id="nuevaRifaPass" placeholder="Contraseña" style="margin-bottom:.8rem" onkeydown="if(event.key==='Enter')confirmarNuevaRifa()">
+      <div id="nuevaRifaErr" style="color:#E74C3C;font-size:.78rem;margin-bottom:.6rem;display:none">Contraseña incorrecta</div>
+      <div style="display:flex;gap:.6rem">
+        <button class="save-btn" style="flex:1;background:transparent;border:1.5px solid var(--brd);color:var(--txt2);box-shadow:none" onclick="cerrarModalNuevaRifa()">Cancelar</button>
+        <button class="save-btn" style="flex:1;background:#E74C3C;box-shadow:none" onclick="confirmarNuevaRifa()">✅ Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="tabs">
+      <div class="tab active" onclick="setTab('config',this)">⚙️ Config</div>
+      <div class="tab" onclick="setTab('boletos',this)">🎫 Boletos</div>
+      <div class="tab" onclick="setTab('stats',this)">📊 Vendidos</div>
+      <div class="tab" onclick="setTab('redes',this)">📱 Redes</div>
+      <div class="tab" onclick="setTab('seguridad',this)">🔐 Seguridad</div>
+      <div class="tab" onclick="setTab('historial',this)">📁 Historial</div>
+      <div class="tab" onclick="setTab('ganadores',this)">🏆 Ganadores</div>
+      <div class="tab" onclick="setTab('ruleta',this)">🎰 Ruleta</div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="section active" id="sec-config">
+      <div class="card">
+        <div class="card-title">🖼️ Hero — Imagen o Video</div>
+        <div class="tipo-btns">
+          <button class="tipo-btn active" id="btnImg" onclick="setTipo('imagen',this)">📷 Imagen</button>
+          <button class="tipo-btn" id="btnVid" onclick="setTipo('video',this)">🎬 Video</button>
+        </div>
+        <label class="upload-lbl">📁 Seleccionar archivo<input type="file" id="heroFile" style="display:none" accept="image/*,video/*" onchange="prevHero(this)"></label>
+        <div class="media-prev" id="heroPrev">
+          <img id="prevImg" src="" style="display:none">
+          <video id="prevVid" src="" muted autoplay loop style="display:none"></video>
+        </div>
+        <div id="uploadProgress" style="display:none;margin-top:.8rem">
+          <div style="font-size:.82rem;color:var(--txt2);margin-bottom:.4rem" id="uploadStatus">Subiendo...</div>
+          <div style="background:#e0e0e0;border-radius:8px;height:10px;overflow:hidden">
+            <div id="uploadBar" style="height:100%;width:0%;background:var(--or);border-radius:8px;transition:width .3s ease"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:.8rem">
+          <label class="lbl">Título principal</label>
+          <input class="inp" id="cTitulo" placeholder="CUMPLIENDO SUEÑOS">
+        </div>
+        <div class="row">
+          <label class="lbl">Subtítulo</label>
+          <input class="inp" id="cSubtitulo" placeholder="PARTICIPA Y GANA CON GUSTAVO">
+        </div>
+        <button class="save-btn" onclick="guardarHero()">💾 Guardar Hero</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🎫 Rifa</div>
+        <div class="row"><label class="lbl">Nombre del premio</label><input class="inp" id="cNombre" placeholder="Gran Rifa de Moto"></div>
+        <div class="row"><label class="lbl">Precio por ticket (COP)</label><input class="inp" type="number" id="cPrecio" placeholder="5000"></div>
+        <div class="row"><label class="lbl">Total de tickets disponibles en la rifa</label><input class="inp" type="number" id="cTotal" placeholder="Ej: 500"></div>
+        <button class="save-btn" id="btnGuardarRifa" onclick="guardarRifa()">💾 Guardar</button>
+        <div class="msg" id="msgRifa"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💳 Métodos de pago</div>
+        <div class="row"><label class="lbl">Nequi — número</label><input class="inp" id="cNequi" placeholder="310 000 0000"></div>
+        <div class="row"><label class="lbl">Daviplata — número</label><input class="inp" id="cDaviplata" placeholder="310 000 0000"></div>
+        <div class="row"><label class="lbl">Bre-B — número o usuario</label><input class="inp" id="cBreb" placeholder="@usuario o número"></div>
+        <div class="row"><label class="lbl">Binance — ID o email</label><input class="inp" id="cBinance" placeholder="ID Binance Pay"></div>
+        <button class="save-btn" id="btnGuardarPagos" onclick="guardarPagos()">💾 Guardar</button>
+        <div class="msg" id="msgPagos"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⭐ Números Dorados</div>
+        <p style="font-size:.82rem;color:var(--txt2);margin-bottom:1rem">El algoritmo elige los números dorados al azar. Cuando alguien compre y le toque uno, verá una pantalla de premio y recibirás un WhatsApp automático.</p>
+        <label class="lbl" style="margin-bottom:.6rem;display:block">¿Cuántos números dorados?</label>
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+          <button class="fbtn" id="dBtn1" onclick="setDoradosQty(1,this)">1</button>
+          <button class="fbtn" id="dBtn2" onclick="setDoradosQty(2,this)">2</button>
+          <button class="fbtn" id="dBtn3" onclick="setDoradosQty(3,this)">3</button>
+          <button class="fbtn" id="dBtn4" onclick="setDoradosQty(4,this)">4</button>
+          <button class="fbtn" id="dBtn5" onclick="setDoradosQty(5,this)">5</button>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button class="save-btn" id="btnSortearDorados" style="opacity:.5;pointer-events:none" onclick="sortearDorados()">🎲 Sortear</button>
+          <button class="save-btn" id="btnPublicarDorados" style="opacity:.5;pointer-events:none;background:#2ECC71" onclick="publicarDorados()">📢 Publicar</button>
+        </div>
+        <p style="font-size:.75rem;color:var(--txt2);margin-top:.6rem">⚠️ Una vez sorteados solo se pueden cambiar iniciando una Nueva Rifa.</p>
+        <div id="msgDorados" style="margin-top:1rem;font-size:.85rem"></div>
+      </div>
+    </div>
+
+    <!-- BOLETOS -->
+    <div class="section" id="sec-boletos">
+      <div class="filters">
+        <button class="fbtn active" onclick="filtrar('todos',this)">Todos</button>
+        <button class="fbtn" onclick="filtrar('pendiente',this)">⏳ Pendientes</button>
+        <button class="fbtn" onclick="filtrar('aprobado',this)">✅ Aprobados</button>
+        <button class="fbtn" onclick="filtrar('rechazado',this)">❌ Rechazados</button>
+      </div>
+      <div id="listaB"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="section" id="sec-stats">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-n" id="sVend">0</div><div class="stat-l">Vendidos</div></div>
+        <div class="stat"><div class="stat-n" id="sDisp">0</div><div class="stat-l">Disponibles</div></div>
+        <div class="stat"><div class="stat-n" id="sPend">0</div><div class="stat-l">Pendientes</div></div>
+        <div class="stat"><div class="stat-n" id="sIngr">$0</div><div class="stat-l">Ingresos</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Ocupación</div>
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--txt2);margin-bottom:.5rem"><span>Aprobados</span><span id="sPct">0%</span></div>
+        <div class="bar"><div class="bar-fill" id="sBar" style="width:0%"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔍 Verificar número</div>
+        <div style="display:flex;gap:.5rem">
+          <input class="inp" type="number" id="vNum" placeholder="Nº de ticket (1–200)" style="flex:1">
+          <button class="save-btn" style="flex-shrink:0;padding:.7rem 1.2rem" onclick="verificar()">Buscar</button>
+        </div>
+        <div class="verif-res" id="vRes"></div>
+      </div>
+    </div>
+
+    <!-- REDES SOCIALES -->
+    <div class="section" id="sec-redes">
+      <div class="card">
+        <div class="card-title">📱 Redes Sociales</div>
+        <div class="row"><label class="lbl">Facebook — URL</label><input class="inp" id="cFb" placeholder="https://facebook.com/..."></div>
+        <div class="row"><label class="lbl">Instagram — URL</label><input class="inp" id="cIg" placeholder="https://instagram.com/gustavoseijas95"></div>
+        <div class="row"><label class="lbl">YouTube — URL</label><input class="inp" id="cYt" placeholder="https://youtube.com/..."></div>
+        <button class="save-btn" onclick="guardarRedes()">💾 Guardar</button>
+        <div class="msg" id="msgRedes"></div>
+      </div>
+    </div>
+
+    <!-- SEGURIDAD -->
+    <div class="section" id="sec-seguridad">
+      <div class="card">
+        <div class="card-title">🔐 Cambiar contraseña</div>
+        <div class="row"><label class="lbl">Nueva contraseña</label><input class="inp" type="password" id="cP1" placeholder="Nueva contraseña"></div>
+        <div class="row"><label class="lbl">Confirmar</label><input class="inp" type="password" id="cP2" placeholder="Repetir contraseña"></div>
+        <button class="save-btn" onclick="cambiarPass()">💾 Cambiar</button>
+        <div class="msg" id="msgPass"></div>
+      </div>
+    </div>
+
+    <!-- RULETA -->
+    <div class="section" id="sec-ruleta">
+      <div class="card" style="text-align:center">
+        <div class="card-title">🎰 Sorteo EN VIVO — Ruleta</div>
+        <p style="font-size:.82rem;color:var(--txt2);margin-bottom:1.5rem">El sistema girará 40 segundos entre todos los números aprobados y se detendrá en el ganador.</p>
+        <button class="save-btn" id="btnIniciarRuleta" onclick="iniciarRuleta()" style="font-size:1rem;padding:.9rem 2rem">🎰 Iniciar Ruleta</button>
+        <div id="ruletaMsg" style="margin-top:.8rem;font-size:.82rem;color:var(--txt2)"></div>
+      </div>
+    </div>
+
+    <!-- MODAL RULETA -->
+    <div id="ruletaModal" style="display:none;position:fixed;inset:0;z-index:2000;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;padding:2rem">
+      <div style="font-size:.85rem;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#888;margin-bottom:1.5rem" id="ruletaRifaNombre"></div>
+      <div style="font-size:.9rem;color:#aaa;margin-bottom:1rem" id="ruletaStatus">🎰 GIRANDO...</div>
+      <div style="position:relative;width:220px;height:120px;overflow:hidden;border-radius:18px;background:#111;border:3px solid #f7c948;box-shadow:0 0 40px rgba(247,201,72,.35)" id="ruletaVentana">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <span id="ruletaNum" style="font-family:monospace;font-size:4.5rem;font-weight:900;color:#f7c948;transition:none">000</span>
+        </div>
+        <div style="position:absolute;top:0;left:0;right:0;height:35px;background:linear-gradient(to bottom,#111,transparent);pointer-events:none"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:35px;background:linear-gradient(to top,#111,transparent);pointer-events:none"></div>
+      </div>
+      <div style="margin-top:1.5rem;height:80px;display:flex;align-items:center;justify-content:center" id="ruletaBarWrap">
+        <div style="width:220px;height:8px;background:#222;border-radius:4px;overflow:hidden">
+          <div id="ruletaBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f7c948,#E8641A);border-radius:4px;transition:width .5s linear"></div>
+        </div>
+      </div>
+      <div id="ruletaGanadorWrap" style="display:none;text-align:center;animation:fadeInUp .6s ease">
+        <div style="font-size:1rem;color:#aaa;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:2px">🏆 ¡GANADOR!</div>
+        <div id="ruletaGanadorNum" style="font-family:monospace;font-size:5rem;font-weight:900;color:#f7c948;text-shadow:0 0 40px rgba(247,201,72,.6)">000</div>
+        <div id="ruletaGanadorNombre" style="font-size:1.3rem;font-weight:800;color:#fff;margin-top:.3rem"></div>
+        <div id="ruletaGanadorTel" style="margin-top:.6rem"></div>
+        <div style="display:flex;gap:.8rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">
+          <button class="save-btn" id="btnGuardarRuleta" onclick="guardarGanadorRuleta()" style="background:#2ECC71">💾 Guardar ganador</button>
+          <button class="save-btn" onclick="cerrarRuleta()" style="background:#555">✕ Cerrar</button>
+        </div>
+      </div>
+      <button onclick="cerrarRuleta()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#555;font-size:1.5rem;cursor:pointer">✕</button>
+    </div>
+    <style>
+      @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes pulseGold{0%,100%{text-shadow:0 0 20px rgba(247,201,72,.4)}50%{text-shadow:0 0 60px rgba(247,201,72,.9)}}
+    </style>
+
+    <!-- GANADORES -->
+    <div class="section" id="sec-ganadores">
+      <div class="card">
+        <div class="card-title">🏆 Números Ganadores por Rifa</div>
+        <p style="font-size:.82rem;color:var(--txt2);margin-bottom:1rem">Nombre y número de contacto de quien tiene cada número dorado.</p>
+        <div id="ganadoresLista"><div style="text-align:center;color:var(--txt2);padding:1rem">Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="section" id="sec-historial">
+      <div class="card">
+        <div class="card-title">📁 Historial de Rifas</div>
+        <p style="font-size:.82rem;color:var(--txt2);margin-bottom:1rem">Registro de todas las rifas anteriores.</p>
+        <div id="historialLista"><div style="text-align:center;color:var(--txt2);padding:1rem">Sin rifas anteriores</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://pecdwxhtaplzjafufiks.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_C-wCdm6KyNSbyvkFNEOlWQ_AJHoEHZH';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let cfg = { admin_password:'gustavo2025' };
+let todosB = [];
+let filtroActual = 'todos';
+let heroTipo = 'imagen';
+
+// ── INIT ──
+async function init() {
+  const { data } = await sb.from('config').select('*');
+  if (data) data.forEach(r => cfg[r.clave] = r.valor);
+  checkPagoMensual();
+}
+
+function checkPagoMensual() {
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const vence = new Date('2026-08-10T00:00:00');
+  const banner = document.getElementById('pagoBanner');
+  const bloqueo = document.getElementById('pagoBloqueo');
+  if (!banner) return;
+
+  if (hoy >= vence) {
+    if (bloqueo) { bloqueo.style.display = 'flex'; }
+    return;
+  }
+
+  const faltan = Math.round((vence - hoy) / 86400000) - 1;
+
+  const txt = faltan === 1 ? 'mañana es el día de pago' : `faltan ${faltan} día${faltan>1?'s':''} para el pago`;
+  let emoji, color, textColor;
+  if (faltan <= 3)       { emoji = '🔴'; color = '#E74C3C'; textColor = '#fff'; }
+  else if (faltan <= 10) { emoji = '🟠'; color = '#E67E22'; textColor = '#fff'; }
+  else if (faltan <= 15) { emoji = '🟡'; color = '#F1C40F'; textColor = '#333'; }
+  else                   { emoji = '🔵'; color = '#2980B9'; textColor = '#fff'; }
+  banner.textContent = `${emoji} Recuerda: ${txt} del servicio — vence el 10 de agosto`;
+  banner.style.background = color;
+  banner.style.color = textColor;
+  banner.style.display = 'block';
+}
+
+// ── LOGIN ──
+async function login() {
+  await init();
+  const pass = document.getElementById('passInput').value;
+  if (pass === cfg.admin_password) {
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('dashView').style.display = 'block';
+    cargarFormularios();
+    cargarBoletos();
+    cargarStats();
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 2000);
+  }
+}
+
+document.getElementById('passInput').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+
+// ── TABS ──
+function setTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if (id==='boletos') cargarBoletos();
+  if (id==='stats') cargarStats();
+  if (id==='historial') mostrarHistorial();
+  if (id==='ganadores') mostrarGanadores();
+  if (id==='ruleta') { /* solo muestra el botón */ }
+}
+
+async function mostrarHistorial() {
+  const lista = document.getElementById('historialLista');
+  let historial = [];
+  try { historial = JSON.parse(cfg.historial||'[]'); } catch(e){}
+  if (!historial.length) { lista.innerHTML = '<div style="text-align:center;color:var(--txt2);padding:1rem">Sin rifas anteriores</div>'; return; }
+
+  // Cargar boletos archivados agrupados por rifa_nombre
+  const { data: archivados } = await sb.from('boletos').select('*').eq('estado','archivado').order('created_at',{ascending:false});
+
+  lista.innerHTML = historial.map((r, i) => {
+    const boletosRifa = (archivados||[]).filter(b => b.rifa_nombre === r.nombre);
+    const boletosHTML = boletosRifa.length ? boletosRifa.map(b => {
+      const fecha = new Date(b.created_at).toLocaleDateString('es-CO');
+      const nums = (b.numeros_asignados||[]).map(n=>`<span style="background:rgba(255,85,0,.12);border:1px solid rgba(255,85,0,.3);color:var(--or);font-size:.7rem;font-weight:800;padding:.1rem .4rem;border-radius:5px">${pad(n)}</span>`).join(' ');
+      return `<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.8rem;margin-bottom:.5rem;font-size:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <strong>${b.nombre}</strong>
+          <span style="color:${b.estado==='aprobado'?'var(--green)':'#E74C3C'};font-size:.72rem;font-weight:800">${b.estado.toUpperCase()}</span>
+        </div>
+        <div style="color:var(--txt2);margin-bottom:.4rem">📱 ${b.whatsapp} · 💳 ${PAY[b.metodo_pago]||b.metodo_pago||'-'} · ${fmt(b.total)} · ${b.cantidad} ticket(s) · ${fecha}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem">${nums}</div>
+      </div>`;
+    }).join('') : '<div style="color:var(--txt2);font-size:.8rem;padding:.5rem">Sin boletos registrados</div>';
+
+    return `<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:14px;padding:1rem;margin-bottom:1rem">
+      <div style="font-weight:900;font-size:1rem;margin-bottom:.3rem">🏆 ${r.nombre}</div>
+      <div style="font-size:.78rem;color:var(--txt2);margin-bottom:.5rem">
+        📅 Apertura: ${r.fecha_inicio||r.fecha} &nbsp;·&nbsp; 🔒 Cierre: ${r.fecha_cierre||r.fecha}
+        &nbsp;·&nbsp; 🎫 ${r.boletos} boletos &nbsp;·&nbsp; 💰 ${fmt(r.ingresos)}
+      </div>
+      ${r.dorados&&r.dorados.length ? `<div style="font-size:.75rem;color:#f7c948;margin-bottom:.6rem">⭐ Números dorados: ${r.dorados.map(n=>pad(n)).join(', ')}</div>` : ''}
+      <details>
+        <summary style="cursor:pointer;font-size:.8rem;font-weight:800;color:var(--or);margin-bottom:.5rem">Ver ${boletosRifa.length} boleto(s)</summary>
+        <div style="margin-top:.5rem">${boletosHTML}</div>
+      </details>
+    </div>`;
+  }).join('');
+}
+
+// ── RULETA ──
+let _ruletaGanador = null;
+let _ruletaTimer = null;
+
+async function iniciarRuleta() {
+  const msgEl = document.getElementById('ruletaMsg');
+  msgEl.textContent = '⏳ Cargando números...';
+  document.getElementById('btnIniciarRuleta').disabled = true;
+
+  const { data } = await sb.from('boletos').select('numeros_asignados,nombre,whatsapp').eq('estado','aprobado');
+  if (!data || !data.length) {
+    msgEl.textContent = '❌ No hay boletos aprobados para sortear.';
+    document.getElementById('btnIniciarRuleta').disabled = false;
+    return;
+  }
+
+  const pool = data.flatMap(b => {
+    let nums = [];
+    try { nums = typeof b.numeros_asignados === 'string' ? JSON.parse(b.numeros_asignados) : (b.numeros_asignados||[]); } catch(e){}
+    return nums.map(n => ({ num: n, nombre: b.nombre, whatsapp: b.whatsapp||'' }));
+  });
+
+  if (!pool.length) {
+    msgEl.textContent = '❌ No hay números asignados.';
+    document.getElementById('btnIniciarRuleta').disabled = false;
+    return;
+  }
+
+  // Fisher-Yates para elegir ganador
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  _ruletaGanador = shuffled[0];
+
+  // Abrir modal
+  document.getElementById('ruletaRifaNombre').textContent = cfg.rifa_nombre || 'Sorteo EN VIVO';
+  document.getElementById('ruletaStatus').textContent = '🎰 GIRANDO...';
+  document.getElementById('ruletaGanadorWrap').style.display = 'none';
+  document.getElementById('ruletaBarWrap').style.display = 'block';
+  document.getElementById('ruletaBar').style.width = '0%';
+  document.getElementById('ruletaNum').style.animation = 'none';
+  document.getElementById('ruletaModal').style.display = 'flex';
+  msgEl.textContent = '';
+  document.getElementById('btnIniciarRuleta').disabled = false;
+
+  const DURACION = 40000; // 40 segundos
+  const inicio = Date.now();
+  const allNums = pool.map(x => x.num);
+
+  function tick() {
+    const elapsed = Date.now() - inicio;
+    const progreso = Math.min(elapsed / DURACION, 1);
+
+    // Actualizar barra
+    document.getElementById('ruletaBar').style.width = (progreso * 100) + '%';
+
+    if (progreso >= 1) {
+      // Mostrar ganador
+      document.getElementById('ruletaNum').textContent = pad(_ruletaGanador.num);
+      document.getElementById('ruletaStatus').textContent = '🏆 ¡GANADOR!';
+      document.getElementById('ruletaBarWrap').style.display = 'none';
+      document.getElementById('ruletaGanadorNum').textContent = pad(_ruletaGanador.num);
+      document.getElementById('ruletaGanadorNombre').textContent = _ruletaGanador.nombre;
+      const tel = _ruletaGanador.whatsapp;
+      document.getElementById('ruletaGanadorTel').innerHTML = tel
+        ? `<a href="tel:${tel.replace(/\D/g,'')}" style="background:#f7c948;color:#000;font-weight:900;padding:.4rem 1.2rem;border-radius:8px;text-decoration:none;font-size:.9rem">📞 ${tel}</a>`
+        : '';
+      document.getElementById('ruletaNum').style.animation = 'pulseGold 1.2s ease-in-out infinite';
+      document.getElementById('ruletaGanadorWrap').style.display = 'block';
+      return;
+    }
+
+    // Velocidad: empieza en 40ms y sube exponencialmente hasta 600ms
+    const intervalo = 40 + Math.pow(progreso, 2.5) * 560;
+
+    // Número a mostrar: durante los últimos 3s acercarse al ganador
+    let numMostrar;
+    if (progreso > 0.925) {
+      // Últimos 3 segundos: ciclar cerca del ganador
+      const cercanos = allNums.filter(n => Math.abs(n - _ruletaGanador.num) <= 5);
+      numMostrar = cercanos.length > 1
+        ? cercanos[Math.floor(Math.random() * cercanos.length)]
+        : allNums[Math.floor(Math.random() * allNums.length)];
+    } else {
+      numMostrar = allNums[Math.floor(Math.random() * allNums.length)];
+    }
+    document.getElementById('ruletaNum').textContent = pad(numMostrar);
+
+    _ruletaTimer = setTimeout(tick, intervalo);
+  }
+
+  tick();
+}
+
+async function guardarGanadorRuleta() {
+  if (!_ruletaGanador) return;
+  const ganador = { num: _ruletaGanador.num, nombre: _ruletaGanador.nombre, whatsapp: _ruletaGanador.whatsapp };
+  let sorteo = []; try { sorteo = JSON.parse(cfg.premios_intermedios||'[]'); } catch(e){}
+  // Evitar duplicados
+  if (!sorteo.find(x => x.num === ganador.num)) sorteo.push(ganador);
+  await sb.from('config').upsert({ clave: 'premios_intermedios', valor: JSON.stringify(sorteo) }, { onConflict: 'clave' });
+  cfg.premios_intermedios = JSON.stringify(sorteo);
+  document.getElementById('btnGuardarRuleta').textContent = '✅ Guardado';
+  document.getElementById('btnGuardarRuleta').disabled = true;
+}
+
+function cerrarRuleta() {
+  if (_ruletaTimer) { clearTimeout(_ruletaTimer); _ruletaTimer = null; }
+  document.getElementById('ruletaModal').style.display = 'none';
+  document.getElementById('btnGuardarRuleta').textContent = '💾 Guardar ganador';
+  document.getElementById('btnGuardarRuleta').disabled = false;
+  _ruletaGanador = null;
+}
+
+// ── GANADORES ──
+async function mostrarGanadores() {
+  const el = document.getElementById('ganadoresLista');
+  el.innerHTML = '<div style="text-align:center;color:var(--txt2);padding:1rem">Cargando...</div>';
+
+  // Obtener boletos actuales (no archivados)
+  const { data: boletosActivos } = await sb.from('boletos')
+    .select('nombre,whatsapp,numeros_asignados,estado')
+    .neq('estado','archivado');
+
+  // Obtener boletos archivados
+  const { data: boletosArchivados } = await sb.from('boletos')
+    .select('nombre,whatsapp,numeros_asignados,rifa_nombre,estado')
+    .eq('estado','archivado');
+
+  let doradosActuales = [];
+  try { doradosActuales = JSON.parse(cfg.premios_dorados||'[]'); } catch(e){}
+  let sorteoActual = [];
+  try { sorteoActual = JSON.parse(cfg.premios_intermedios||'[]'); } catch(e){}
+  const rifaActual = cfg.rifa_nombre || 'Rifa actual';
+
+  let historial = [];
+  try { historial = JSON.parse(cfg.historial||'[]'); } catch(e){}
+
+  function buscarTitular(boletos, numero) {
+    const b = (boletos||[]).find(b => {
+      let nums = [];
+      try { nums = typeof b.numeros_asignados === 'string' ? JSON.parse(b.numeros_asignados) : (b.numeros_asignados||[]); } catch(e){}
+      return nums.includes(numero);
+    });
+    return b || null;
+  }
+
+  function renderFila(numero, nombre, whatsapp) {
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;background:var(--bg2);border-radius:10px;margin-bottom:.4rem;gap:.5rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span style="font-family:monospace;font-size:1.1rem;font-weight:900;color:#f7c948">${pad(numero)}</span>
+        ${nombre
+          ? `<span style="font-size:.88rem;font-weight:700">${nombre}</span>`
+          : `<span style="font-size:.82rem;color:var(--txt2);font-style:italic">Sin comprador</span>`}
+      </div>
+      ${whatsapp
+        ? `<a href="tel:${whatsapp.replace(/\D/g,'')}" style="background:var(--or);color:#fff;font-weight:800;font-size:.78rem;padding:.35rem .8rem;border-radius:8px;text-decoration:none;white-space:nowrap">📞 ${whatsapp}</a>`
+        : ''}
+    </div>`;
+  }
+
+  function renderGrupo(rifaNombre, dorados, sorteo, boletos) {
+    const tieneDorados = dorados && dorados.length;
+    const tieneSorteo = sorteo && sorteo.length;
+    if (!tieneDorados && !tieneSorteo) return `
+      <div style="margin-bottom:1.2rem">
+        <div style="font-weight:800;font-size:.95rem;color:var(--or);margin-bottom:.5rem">📋 ${rifaNombre}</div>
+        <div style="font-size:.82rem;color:var(--txt2)">Sin ganadores registrados.</div>
+      </div>`;
+
+    let html = `<div style="margin-bottom:1.8rem">
+      <div style="font-weight:800;font-size:.95rem;color:var(--or);margin-bottom:.6rem">📋 ${rifaNombre}</div>`;
+
+    if (tieneSorteo) {
+      html += `<div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin-bottom:.4rem">🏆 Premio Grande</div>`;
+      sorteo.forEach(g => {
+        const w = g.whatsapp || (boletos ? buscarTitular(boletos, g.num)?.whatsapp : '') || '';
+        html += renderFila(g.num, g.nombre, w);
+      });
+    }
+
+    if (tieneDorados) {
+      html += `<div style="font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);margin:${tieneSorteo?'.8rem':0} 0 .4rem">⭐ Números Dorados</div>`;
+      dorados.forEach(n => {
+        const titular = boletos ? buscarTitular(boletos, n) : null;
+        html += renderFila(n, titular?.nombre||'', titular?.whatsapp||'');
+      });
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  let html = '';
+
+  // Rifa actual
+  html += renderGrupo(rifaActual + ' (en curso)', doradosActuales, sorteoActual, boletosActivos||[]);
+
+  // Rifas pasadas
+  if (historial.length) {
+    historial.forEach(r => {
+      const boletosRifa = (boletosArchivados||[]).filter(b => b.rifa_nombre === r.nombre);
+      html += renderGrupo(r.nombre, r.dorados||[], r.sorteo||[], boletosRifa);
+    });
+  } else {
+    html += '<div style="font-size:.82rem;color:var(--txt2);margin-top:.5rem">Sin rifas anteriores.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ── FORMULARIOS ──
+function cargarFormularios() {
+  document.getElementById('cTitulo').value = cfg.hero_titulo||'';
+  document.getElementById('cSubtitulo').value = cfg.hero_subtitulo||'';
+  document.getElementById('cNombre').value = cfg.rifa_nombre||'';
+  document.getElementById('cPrecio').value = cfg.precio_ticket||'';
+  document.getElementById('cTotal').value = cfg.total_tickets||'200';
+  // Mostrar números dorados actuales si ya fueron sorteados
+  try {
+    const dorados = JSON.parse(cfg.premios_dorados||'[]');
+    if (dorados.length > 0) {
+      const msgEl = document.getElementById('msgDorados');
+      if (msgEl) { msgEl.style.color='#f7c948'; msgEl.innerHTML='⭐ <strong>Números dorados activos:</strong> ' + dorados.map(n=>pad(n)).join(', '); }
+    }
+  } catch(e) {}
+  document.getElementById('cNequi').value = cfg.nequi_numero||'';
+  document.getElementById('cDaviplata').value = cfg.daviplata_numero||'';
+  document.getElementById('cBreb').value = cfg.breb_numero||'';
+  document.getElementById('cBinance').value = cfg.binance_id||'';
+  // Bloquear si ya hay config guardada
+  if (cfg.rifa_nombre || cfg.nequi_numero || cfg.precio_ticket) bloquearConfig();
+  document.getElementById('cFb').value = cfg.facebook_url||'';
+  document.getElementById('cIg').value = cfg.instagram_url||'';
+  document.getElementById('cYt').value = cfg.youtube_url||'';
+  heroTipo = cfg.hero_tipo||'imagen';
+  document.getElementById('btnImg').classList.toggle('active', heroTipo==='imagen');
+  document.getElementById('btnVid').classList.toggle('active', heroTipo==='video');
+}
+
+async function upsertCfg(updates) {
+  for (const [clave,valor] of Object.entries(updates)) {
+    await sb.from('config').upsert({clave, valor:String(valor)},{onConflict:'clave'});
+  }
+  Object.assign(cfg, updates);
+}
+
+function ok(id) { const el=document.getElementById(id); el.style.color='var(--green)'; el.textContent='✅ Guardado'; setTimeout(()=>el.textContent='',3000); }
+function err(id,msg) { const el=document.getElementById(id); el.style.color='var(--red)'; el.textContent='❌ '+msg; setTimeout(()=>el.textContent='',4000); }
+
+// ── HERO ──
+function setTipo(tipo, btn) {
+  heroTipo = tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('heroFile').accept = tipo==='video'?'video/*':'image/*';
+}
+function prevHero(input) {
+  const file = input.files[0]; if(!file) return;
+  const url = URL.createObjectURL(file);
+  const wrap = document.getElementById('heroPrev');
+  const img = document.getElementById('prevImg');
+  const vid = document.getElementById('prevVid');
+  wrap.style.display = 'block';
+  if (heroTipo==='video') { img.style.display='none'; vid.src=url; vid.style.display='block'; }
+  else { vid.style.display='none'; img.src=url; img.style.display='block'; }
+}
+function comprimirImagen(file, maxW=1920, quality=0.82) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let {width:w, height:h} = img;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function setProgress(pct, msg) {
+  document.getElementById('uploadProgress').style.display = 'block';
+  document.getElementById('uploadBar').style.width = pct + '%';
+  document.getElementById('uploadStatus').textContent = msg;
+}
+
+function hideProgress() {
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('uploadBar').style.width = '0%';
+}
+
+async function guardarHero() {
+  const input = document.getElementById('heroFile');
+  let heroUrl = cfg.hero_url||'';
+  if (input.files[0]) {
+    const file = input.files[0];
+    const esVideo = heroTipo === 'video';
+    const btn = document.querySelector('[onclick="guardarHero()"]');
+    btn.disabled = true; btn.textContent = '⏳ Subiendo...';
+    try {
+      let fileToUpload = file;
+      let contentType = file.type;
+      let ext = file.name.split('.').pop();
+      if (!esVideo) {
+        setProgress(10, 'Comprimiendo imagen...');
+        const blob = await comprimirImagen(file);
+        fileToUpload = blob; contentType = 'image/jpeg'; ext = 'jpg';
+      } else {
+        setProgress(5, 'Preparando video...');
+      }
+      setProgress(30, 'Subiendo a servidor...');
+      const fn = `hero_${Date.now()}.${ext}`;
+      const { error } = await sb.storage.from('rifa-media').upload(fn, fileToUpload, {upsert:true, contentType});
+      if (!error) {
+        setProgress(90, 'Guardando URL...');
+        const {data} = sb.storage.from('rifa-media').getPublicUrl(fn);
+        heroUrl = data.publicUrl;
+        setProgress(100, '✅ Archivo subido');
+      } else {
+        setProgress(0, '❌ Error al subir: ' + error.message);
+      }
+    } catch(e) {
+      setProgress(0, '❌ Error: ' + e.message);
+    }
+    btn.disabled = false; btn.textContent = '💾 Guardar Hero';
+  }
+  const titulo = document.getElementById('cTitulo').value.trim();
+  const subt = document.getElementById('cSubtitulo').value.trim();
+  await upsertCfg({hero_tipo:heroTipo, hero_url:heroUrl, hero_titulo:titulo, hero_subtitulo:subt});
+  alert('✅ Hero guardado');
+}
+
+// ── RIFA ──
+const CAMPOS_CONFIG = ['cNombre','cPrecio','cTotal','cNequi','cDaviplata','cBreb','cBinance'];
+const BTNS_CONFIG   = ['btnGuardarRifa','btnGuardarPagos'];
+
+function bloquearConfig() {
+  CAMPOS_CONFIG.forEach(id => { const el = document.getElementById(id); if(el){ el.disabled = true; el.style.opacity = '.5'; } });
+  BTNS_CONFIG.forEach(id => { const el = document.getElementById(id); if(el){ el.disabled = true; el.style.opacity = '.5'; el.style.pointerEvents = 'none'; } });
+}
+
+function desbloquearConfig() {
+  CAMPOS_CONFIG.forEach(id => { const el = document.getElementById(id); if(el){ el.disabled = false; el.style.opacity = '1'; } });
+  BTNS_CONFIG.forEach(id => { const el = document.getElementById(id); if(el){ el.disabled = false; el.style.opacity = '1'; el.style.pointerEvents = 'auto'; } });
+}
+
+async function guardarRifa() {
+  let total = parseInt(document.getElementById('cTotal').value);
+  if (!total || total < 1) { err('msgRifa','Ingresa un número válido'); return; }
+  await upsertCfg({
+    rifa_nombre: document.getElementById('cNombre').value.trim(),
+    precio_ticket: document.getElementById('cPrecio').value,
+    total_tickets: String(total)
+  });
+  if (!cfg.rifa_inicio) {
+    const hoy = new Date().toLocaleDateString('es-CO');
+    await sb.from('config').upsert({ clave: 'rifa_inicio', valor: hoy }, { onConflict: 'clave' });
+    cfg.rifa_inicio = hoy;
+  }
+  ok('msgRifa');
+  bloquearConfig();
+}
+
+// ── NÚMEROS DORADOS ──
+let _doradosQty = 0;
+
+function setDoradosQty(n, el) {
+  _doradosQty = n;
+  document.querySelectorAll('[id^="dBtn"]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const btn = document.getElementById('btnSortearDorados');
+  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+}
+
+async function sortearDorados() {
+  if (!_doradosQty) return;
+  const msgEl = document.getElementById('msgDorados');
+  msgEl.textContent = '⏳ Sorteando...';
+  const total = Number(cfg.total_tickets) || 100;
+  const { data } = await sb.from('boletos').select('numeros_asignados').not('estado','in','("rechazado","archivado")');
+  const usados = new Set();
+  (data||[]).forEach(b => (b.numeros_asignados||[]).forEach(n => usados.add(n)));
+  const disponibles = [];
+  for (let i = 1; i <= total; i++) { if (!usados.has(i)) disponibles.push(i); }
+  if (disponibles.length < _doradosQty) { msgEl.textContent = `Solo hay ${disponibles.length} número(s) disponibles.`; return; }
+  for (let i = disponibles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]];
+  }
+  const nums = disponibles.slice(0, _doradosQty).sort((a,b) => a-b);
+  await sb.from('config').upsert({ clave: 'premios_dorados', valor: JSON.stringify(nums) }, { onConflict: 'clave' });
+  cfg.premios_dorados = JSON.stringify(nums);
+  // Bloquear UI — solo Nueva Rifa puede resetear
+  document.querySelectorAll('[id^="dBtn"]').forEach(b => { b.disabled = true; b.style.opacity = '.4'; b.style.pointerEvents = 'none'; });
+  document.getElementById('btnSortearDorados').style.opacity = '.4';
+  document.getElementById('btnSortearDorados').style.pointerEvents = 'none';
+  const btnP = document.getElementById('btnPublicarDorados');
+  btnP.style.opacity = '1'; btnP.style.pointerEvents = 'auto';
+  msgEl.style.color = '#f7c948';
+  msgEl.innerHTML = '⭐ <strong>Números dorados asignados:</strong> ' + nums.map(n => `<strong>${pad(n)}</strong>`).join(', ');
+}
+
+async function publicarDorados() {
+  await sb.from('config').upsert({ clave: 'dorados_publicados', valor: 'true' }, { onConflict: 'clave' });
+  const msgEl = document.getElementById('msgDorados');
+  msgEl.style.color = 'var(--green)';
+  msgEl.innerHTML += '<br>✅ Publicado en la página pública.';
+  document.getElementById('btnPublicarDorados').style.opacity = '.5';
+  document.getElementById('btnPublicarDorados').style.pointerEvents = 'none';
+}
+
+async function limpiarDorados() {
+  await sb.from('config').upsert({ clave: 'premios_dorados', valor: '[]' }, { onConflict: 'clave' });
+  cfg.premios_dorados = '[]';
+  _doradosQty = 0;
+  document.querySelectorAll('[id^="dBtn"]').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btnSortearDorados');
+  btn.style.opacity = '.5'; btn.style.pointerEvents = 'none';
+  const msgEl = document.getElementById('msgDorados');
+  msgEl.style.color = 'var(--txt2)';
+  msgEl.textContent = 'Números dorados eliminados.';
+}
+
+// ── PAGOS ──
+async function guardarPagos() {
+  await upsertCfg({
+    nequi_numero: document.getElementById('cNequi').value.trim(),
+    daviplata_numero: document.getElementById('cDaviplata').value.trim(),
+    breb_numero: document.getElementById('cBreb').value.trim(),
+    binance_id: document.getElementById('cBinance').value.trim()
+  });
+  ok('msgPagos');
+  bloquearConfig();
+}
+
+// ── REDES ──
+async function guardarRedes() {
+  await upsertCfg({
+    facebook_url: document.getElementById('cFb').value.trim(),
+    instagram_url: document.getElementById('cIg').value.trim(),
+    youtube_url: document.getElementById('cYt').value.trim()
+  });
+  ok('msgRedes');
+}
+
+// ── CONTRASEÑA ──
+async function cambiarPass() {
+  const p1 = document.getElementById('cP1').value;
+  const p2 = document.getElementById('cP2').value;
+  if (!p1||p1.length<4) { err('msgPass','Mínimo 4 caracteres'); return; }
+  if (p1!==p2) { err('msgPass','Las contraseñas no coinciden'); return; }
+  await upsertCfg({admin_password:p1});
+  document.getElementById('cP1').value='';
+  document.getElementById('cP2').value='';
+  ok('msgPass');
+}
+
+// ── BOLETOS ──
+function fmt(n){ return '$'+Number(n).toLocaleString('es-CO'); }
+function pad(n){ return String(n).padStart(3,'0'); }
+const PAY = {nequi:'Nequi',daviplata:'Daviplata',breb:'Bre-B',binance:'Binance'};
+
+async function cargarBoletos() {
+  const lista = document.getElementById('listaB');
+  lista.innerHTML = '<div style="text-align:center;color:var(--txt2);padding:2rem">Cargando...</div>';
+  const { data } = await sb.from('boletos').select('*').neq('estado','archivado').order('created_at',{ascending:false});
+  todosB = data||[];
+  renderB();
+}
+
+function filtrar(f, btn) {
+  filtroActual = f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderB();
+}
+
+function renderB() {
+  const lista = document.getElementById('listaB');
+  const items = filtroActual==='todos' ? todosB : todosB.filter(b=>b.estado===filtroActual);
+  if (!items.length) { lista.innerHTML='<div style="text-align:center;color:var(--txt2);padding:2rem">Sin resultados</div>'; return; }
+  lista.innerHTML = items.map(b => {
+    const fecha = new Date(b.created_at).toLocaleDateString('es-CO');
+    const nums = (b.numeros_asignados||[]).map(n=>`<div class="b-num">${pad(n)}</div>`).join('');
+    const compBtn = b.comprobante_url ? `<button class="btn-vc" onclick="window.open('${b.comprobante_url}','_blank')">📷 Comprobante</button>` : '';
+    const apBtn = b.estado!=='aprobado' ? `<button class="btn-ap" onclick="cambiarE('${b.id}','aprobado')">✅ Aprobar</button>` : '';
+    const reBtn = b.estado!=='rechazado' ? `<button class="btn-re" onclick="cambiarE('${b.id}','rechazado')">❌ Rechazar</button>` : '';
+    return `<div class="boleto ${b.estado}">
+      <div class="b-head"><div class="b-id">#${b.id.slice(-6).toUpperCase()}</div><div class="b-estado ${b.estado}">${b.estado}</div></div>
+      <div style="font-size:.72rem;font-weight:800;color:var(--or);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px">🏆 ${cfg.rifa_nombre||'Rifa'}</div>
+      <div class="b-info">👤 ${b.nombre} · 📱 ${b.whatsapp} · 🪪 ${b.cedula||'-'}<br>💳 ${PAY[b.metodo_pago]||b.metodo_pago||'-'} · ${fmt(b.total)} · ${b.cantidad} ticket(s)<br>📅 ${fecha} · Ref: ${b.referencia||'-'}</div>
+      <div class="b-nums">${nums}</div>
+      <div class="b-acts">${apBtn}${reBtn}${compBtn}</div>
+    </div>`;
+  }).join('');
+}
+
+async function cambiarE(id, estado) {
+  await sb.from('boletos').update({estado}).eq('id',id);
+  todosB = todosB.map(b=>b.id===id?{...b,estado}:b);
+  renderB();
+  cargarStats();
+}
+
+// ── STATS ──
+async function cargarStats() {
+  const { data } = await sb.from('boletos').select('cantidad,estado,total').neq('estado','archivado');
+  const total = Number(cfg.total_tickets)||200;
+  const aprobados = (data||[]).filter(r=>r.estado==='aprobado');
+  const pendientes = (data||[]).filter(r=>r.estado==='pendiente');
+  const tAp = aprobados.reduce((s,r)=>s+(r.cantidad||0),0);
+  const tPe = pendientes.reduce((s,r)=>s+(r.cantidad||0),0);
+  const vend = tAp+tPe;
+  const ingr = aprobados.reduce((s,r)=>s+(Number(r.total)||0),0);
+  const pct = Math.round((tAp/total)*100);
+  const g = id=>document.getElementById(id);
+  if(g('sVend'))g('sVend').textContent=vend;
+  if(g('sDisp'))g('sDisp').textContent=Math.max(0,total-vend);
+  if(g('sPend'))g('sPend').textContent=tPe;
+  if(g('sIngr'))g('sIngr').textContent=fmt(ingr);
+  if(g('sPct'))g('sPct').textContent=pct+'%';
+  if(g('sBar'))g('sBar').style.width=pct+'%';
+}
+
+// ── SORTEO PREVIO ──
+let _sorteoQty = 0;
+let _sorteoNums = [];
+
+function setSorteoQty(n, el) {
+  _sorteoQty = n;
+  document.querySelectorAll('[id^="sqBtn"]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const btnS = document.getElementById('btnSortear');
+  btnS.style.opacity = '1'; btnS.style.pointerEvents = 'auto';
+}
+
+async function realizarSorteo() {
+  const res = document.getElementById('sorteoResultado');
+  res.textContent = '⏳ Sorteando...';
+  const { data } = await sb.from('boletos').select('numeros_asignados,nombre,whatsapp').eq('estado','aprobado');
+  if (!data || !data.length) { res.textContent = 'No hay boletos aprobados.'; return; }
+  const pool = data.flatMap(b => (b.numeros_asignados||[]).map(n => ({ num: n, nombre: b.nombre, whatsapp: b.whatsapp||'' })));
+  if (pool.length < _sorteoQty) { res.textContent = `Solo hay ${pool.length} número(s) aprobado(s).`; return; }
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  _sorteoNums = pool.slice(0, _sorteoQty);
+  res.innerHTML = '<strong>Ganadores sorteados:</strong><br>' + _sorteoNums.map(x => `🎟️ ${pad(x.num)} — ${x.nombre}`).join('<br>');
+  const btnP = document.getElementById('btnPublicar');
+  btnP.style.opacity = '1'; btnP.style.pointerEvents = 'auto';
+}
+
+async function publicarPremios() {
+  await sb.from('config').upsert({ clave: 'premios_intermedios', valor: JSON.stringify(_sorteoNums) }, { onConflict: 'clave' });
+  alert('✅ Premios publicados en la página pública.');
+}
+
+async function limpiarPremios() {
+  await sb.from('config').upsert({ clave: 'premios_intermedios', valor: '' }, { onConflict: 'clave' });
+  _sorteoNums = [];
+  document.getElementById('sorteoResultado').textContent = 'Premios eliminados de la página pública.';
+  const btnP = document.getElementById('btnPublicar');
+  btnP.style.opacity = '.5'; btnP.style.pointerEvents = 'none';
+}
+
+// ── NUEVA RIFA ──
+function iniciarNuevaRifa() {
+  document.getElementById('nuevaRifaPass').value = '';
+  document.getElementById('nuevaRifaErr').style.display = 'none';
+  const m = document.getElementById('nuevaRifaModal');
+  m.style.display = 'flex';
+}
+function cerrarModalNuevaRifa() {
+  document.getElementById('nuevaRifaModal').style.display = 'none';
+}
+async function confirmarNuevaRifa() {
+  const pass = document.getElementById('nuevaRifaPass').value;
+  if (pass !== (cfg.admin_password || 'gustavo2025')) {
+    document.getElementById('nuevaRifaErr').style.display = 'block';
+    return;
+  }
+  cerrarModalNuevaRifa();
+
+  // Guardar resumen en historial antes de archivar
+  const { data: boletosActivos } = await sb.from('boletos').select('cantidad,total,estado,numeros_asignados')
+    .in('estado', ['pendiente','aprobado']);
+  const totalBoletos = (boletosActivos||[]).reduce((s,b) => s+(b.cantidad||0), 0);
+  const totalIngresos = (boletosActivos||[]).filter(b=>b.estado==='aprobado').reduce((s,b) => s+(Number(b.total)||0), 0);
+  let dorados = []; try { dorados = JSON.parse(cfg.premios_dorados||'[]'); } catch(e){}
+  let sorteo = []; try { sorteo = JSON.parse(cfg.premios_intermedios||'[]'); } catch(e){}
+  const rifaNombreActual = cfg.rifa_nombre || 'Sin nombre';
+  const fechaCierre = new Date().toLocaleDateString('es-CO');
+  const fechaInicio = cfg.rifa_inicio || fechaCierre;
+  const entrada = { nombre: rifaNombreActual, fecha_inicio: fechaInicio, fecha_cierre: fechaCierre, boletos: totalBoletos, ingresos: totalIngresos, dorados, sorteo };
+  let historial = []; try { historial = JSON.parse(cfg.historial||'[]'); } catch(e){}
+  historial.unshift(entrada);
+  await sb.from('config').upsert({ clave: 'historial', valor: JSON.stringify(historial) }, { onConflict: 'clave' });
+  cfg.historial = JSON.stringify(historial);
+
+  // Etiquetar boletos con nombre de rifa antes de archivar
+  await sb.from('boletos').update({ rifa_nombre: rifaNombreActual, estado: 'archivado' }).in('estado', ['pendiente','aprobado','rechazado']);
+  await sb.from('config').upsert({ clave: 'premios_intermedios', valor: '' }, { onConflict: 'clave' });
+  await sb.from('config').upsert({ clave: 'premios_dorados', valor: '[]' }, { onConflict: 'clave' });
+  await sb.from('config').upsert({ clave: 'dorados_publicados', valor: 'false' }, { onConflict: 'clave' });
+  desbloquearConfig();
+  cfg.premios_dorados = '[]';
+  // Desbloquear UI de números dorados
+  document.querySelectorAll('[id^="dBtn"]').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.style.pointerEvents = 'auto'; b.classList.remove('active'); });
+  _doradosQty = 0;
+  const btnSD = document.getElementById('btnSortearDorados');
+  btnSD.style.opacity = '.5'; btnSD.style.pointerEvents = 'none';
+  const msgD = document.getElementById('msgDorados');
+  if (msgD) { msgD.textContent = ''; }
+  todosB = [];
+  renderB();
+  cargarStats();
+  // Guardar fecha de inicio de la nueva rifa
+  const hoy = new Date().toLocaleDateString('es-CO');
+  await sb.from('config').upsert({ clave: 'rifa_inicio', valor: hoy }, { onConflict: 'clave' });
+  cfg.rifa_inicio = hoy;
+  alert('✅ Nueva rifa iniciada.');
+}
+
+// ── VERIFICAR ──
+async function verificar() {
+  const n = parseInt(document.getElementById('vNum').value);
+  const res = document.getElementById('vRes');
+  if (!n||n<1||n>200){res.style.display='block';res.innerHTML='<span style="color:var(--red)">Número inválido (1–200)</span>';return;}
+  const {data}=await sb.from('boletos').select('*').contains('numeros_asignados',[n]).not('estado','in','("rechazado","archivado")');
+  res.style.display='block';
+  if(data&&data.length>0){
+    const b=data[0];
+    res.innerHTML=`<div style="color:var(--green);font-weight:800;margin-bottom:.4rem">✅ #${pad(n)} — RESERVADO</div>
+    <div style="font-size:.82rem;color:var(--txt2)">Titular: <strong style="color:var(--txt)">${b.nombre}</strong><br>Cédula: ${b.cedula||'-'} · WhatsApp: ${b.whatsapp}<br>Estado: <strong style="color:${b.estado==='aprobado'?'var(--green)':'#F39C12'}">${b.estado}</strong></div>`;
+  }else{
+    res.innerHTML=`<div style="color:var(--txt2)">🎫 #${pad(n)} — <strong style="color:var(--green)">DISPONIBLE</strong></div>`;
+  }
+}
+</script>
+</body>
+</html>

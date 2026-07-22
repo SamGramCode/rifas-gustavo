@@ -130,7 +130,7 @@ input,select,textarea{font-family:inherit;outline:none}
   <div id="pagoBloqueo" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem">
     <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
     <div style="color:#fff;font-size:1.4rem;font-weight:900;margin-bottom:.8rem">Acceso bloqueado</div>
-    <div style="color:rgba(255,255,255,.7);font-size:.9rem">Hoy es día de pago del servicio.<br>Comunícate con el administrador para renovar.</div>
+    <div style="color:rgba(255,255,255,.7);font-size:.9rem">El servicio está temporalmente bloqueado.<br>Comunícate con el administrador para renovar.</div>
   </div>
 
   <div class="dash-nav">
@@ -368,18 +368,22 @@ async function init() {
   const { data } = await sb.from('config').select('*');
   if (data) data.forEach(r => cfg[r.clave] = r.valor);
   checkPagoMensual();
+  await checkAccesoBloqueado();
 }
 
+// Banner informativo — solo avisa, nunca bloquea
 function checkPagoMensual() {
   const hoy = new Date();
   hoy.setHours(0,0,0,0);
   const vence = new Date('2026-08-10T00:00:00');
   const banner = document.getElementById('pagoBanner');
-  const bloqueo = document.getElementById('pagoBloqueo');
   if (!banner) return;
 
   if (hoy >= vence) {
-    if (bloqueo) { bloqueo.style.display = 'flex'; }
+    banner.textContent = '🔴 Pago vencido — contacta al administrador';
+    banner.style.background = '#E74C3C';
+    banner.style.color = '#fff';
+    banner.style.display = 'block';
     return;
   }
 
@@ -395,6 +399,22 @@ function checkPagoMensual() {
   banner.style.background = color;
   banner.style.color = textColor;
   banner.style.display = 'block';
+}
+
+// Bloqueo real — se activa solo una vez, automáticamente, el 10 de agosto 2026 a las 00:01.
+// Desde ahí queda bloqueado hasta que se desactive manualmente en Supabase (clave: acceso_manual_desbloqueado).
+// No hay ningún botón en este panel para desbloquearlo — solo control manual directo en la base de datos.
+async function checkAccesoBloqueado() {
+  const FECHA_LIMITE = new Date('2026-08-10T00:01:00');
+  const bloqueo = document.getElementById('pagoBloqueo');
+  if (!bloqueo) return;
+  if (new Date() < FECHA_LIMITE) return;
+  try {
+    const { data } = await sb.from('config').select('valor').eq('clave','acceso_manual_desbloqueado').single();
+    if (!(data && data.valor === 'true')) {
+      bloqueo.style.display = 'flex';
+    }
+  } catch(e) {}
 }
 
 // ── LOGIN ──

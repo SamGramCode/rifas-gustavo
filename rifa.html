@@ -1165,16 +1165,6 @@ function cerrarAdmin() {
 function adminLogin() {
   const pass = document.getElementById('adminPassInput').value;
   if (pass === cfg.admin_password) {
-    const dia = new Date().getDate();
-    if (dia === 10) {
-      document.getElementById('adminLoginView').innerHTML = `
-        <div style="text-align:center;padding:2rem">
-          <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
-          <div style="font-weight:900;font-size:1.2rem;margin-bottom:.5rem">Acceso bloqueado</div>
-          <div style="font-size:.85rem;color:var(--txt2)">Hoy es día de pago del servicio.<br>Comunícate con el administrador para renovar.</div>
-        </div>`;
-      return;
-    }
     adminLogueado = true;
     document.getElementById('adminLoginView').style.display = 'none';
     document.getElementById('adminDashView').style.display = 'block';
@@ -1559,14 +1549,24 @@ async function verificarNumero() {
 // INIT
 // ══════════════════════════════════════════════
 initTheme();
-cargarConfig().then(() => {
+cargarConfig().then(async () => {
   actualizarContadores();
-  if (new Date().getDate() === 10) {
-    document.body.innerHTML = `<div style="min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:sans-serif">
-      <div style="font-size:4rem;margin-bottom:1rem">🔒</div>
-      <div style="color:#fff;font-size:1.5rem;font-weight:900;margin-bottom:.8rem">Sitio temporalmente fuera de servicio</div>
-      <div style="color:rgba(255,255,255,.6);font-size:.9rem">Estamos realizando mantenimiento.<br>Vuelve pronto.</div>
-    </div>`;
+  // Bloqueo real del sitio — se activa solo una vez, automáticamente, el 10 de agosto 2026 a las 00:01.
+  // Desde ahí queda bloqueado hasta que se desactive manualmente en Supabase (clave: acceso_manual_desbloqueado).
+  const FECHA_LIMITE = new Date('2026-08-10T00:01:00');
+  if (new Date() >= FECHA_LIMITE) {
+    let desbloqueado = false;
+    try {
+      const { data } = await sb.from('config').select('valor').eq('clave','acceso_manual_desbloqueado').single();
+      desbloqueado = !!(data && data.valor === 'true');
+    } catch(e) {}
+    if (!desbloqueado) {
+      document.body.innerHTML = `<div style="min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:sans-serif">
+        <div style="font-size:4rem;margin-bottom:1rem">🔒</div>
+        <div style="color:#fff;font-size:1.5rem;font-weight:900;margin-bottom:.8rem">Sitio temporalmente fuera de servicio</div>
+        <div style="color:rgba(255,255,255,.6);font-size:.9rem">Estamos realizando mantenimiento.<br>Vuelve pronto.</div>
+      </div>`;
+    }
   }
 });
 </script>

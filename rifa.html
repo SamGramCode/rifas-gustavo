@@ -699,6 +699,29 @@ const SUPABASE_URL = 'https://pecdwxhtaplzjafufiks.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_C-wCdm6KyNSbyvkFNEOlWQ_AJHoEHZH';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Carga prioritaria y mínima del video/imagen del hero — se dispara de inmediato,
+// en paralelo con el resto de la página, sin esperar la config completa (~20 valores)
+(async () => {
+  try {
+    const { data } = await sb.from('config').select('clave,valor').in('clave', ['hero_url','hero_tipo']);
+    const map = Object.fromEntries((data||[]).map(r => [r.clave, r.valor]));
+    if (map.hero_url) {
+      const img = document.getElementById('heroImg');
+      const vid = document.getElementById('heroVid');
+      if (map.hero_tipo === 'video') {
+        if (img) img.style.display = 'none';
+        if (vid) {
+          if (vid.src !== map.hero_url) vid.src = map.hero_url;
+          vid.style.display = 'block';
+        }
+      } else {
+        if (vid) vid.style.display = 'none';
+        if (img) { img.src = map.hero_url; img.style.display = 'block'; }
+      }
+    }
+  } catch(e) {}
+})();
+
 // ══════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════

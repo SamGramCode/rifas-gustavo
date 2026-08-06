@@ -9,6 +9,8 @@
 <link rel="apple-touch-icon" href="logo-moto2.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RifasGustavo">
+<link rel="preconnect" href="https://pecdwxhtaplzjafufiks.supabase.co">
+<link rel="preload" as="video" type="video/mp4" href="https://pecdwxhtaplzjafufiks.supabase.co/storage/v1/object/public/rifa-media/hero_1784311930697_comp.mp4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&family=Permanent+Marker&family=Bangers&family=Russo+One&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -529,7 +531,7 @@ body.light .drawer-item{background:#F4F4F4}
 
   <section class="hero" id="heroSection">
     <img class="hero-media" id="heroImg" src="" alt="Rifa" style="display:none">
-    <video class="hero-media" id="heroVid" muted autoplay loop playsinline style="display:none"></video>
+    <video class="hero-media" id="heroVid" muted autoplay loop playsinline src="https://pecdwxhtaplzjafufiks.supabase.co/storage/v1/object/public/rifa-media/hero_1784311930697_comp.mp4"></video>
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <div class="hero-tag">🏆 PARTICIPA Y GANA</div>
@@ -751,7 +753,7 @@ function aplicarConfig() {
   if (cfg.hero_url) {
     if (cfg.hero_tipo === 'video') {
       img.style.display = 'none';
-      vid.src = cfg.hero_url;
+      if (vid.src !== cfg.hero_url) vid.src = cfg.hero_url;
       vid.style.display = 'block';
     } else {
       vid.style.display = 'none';

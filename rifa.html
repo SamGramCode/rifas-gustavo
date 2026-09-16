@@ -138,6 +138,7 @@ body.light .drawer-item{background:#F4F4F4}
 .pay-card.sel.daviplata{border-color:#E52B20;background:rgba(229,43,32,.07)}
 .pay-card.sel.breb{border-color:#FFC300;background:rgba(255,195,0,.07)}
 .pay-card.sel.binance{border-color:#F3BA2F;background:rgba(243,186,47,.07)}
+.pay-card.sel.pago_movil{border-color:#1565C0;background:rgba(21,101,192,.07)}
 .pay-icon{font-size:1.6rem;margin-bottom:.3rem}
 .pay-name{font-weight:800;font-size:.85rem}
 .pay-info-box{background:rgba(255,85,0,.07);border:1px solid rgba(255,85,0,.25);border-radius:12px;padding:1rem;margin-bottom:1rem;display:none}
@@ -353,7 +354,7 @@ body.light .drawer-item{background:#F4F4F4}
             <input class="admin-input" id="cfgRifaNombre" placeholder="Gran Rifa de Moto">
           </div>
           <div class="admin-row">
-            <label class="admin-lbl">Precio por ticket (COP)</label>
+            <label class="admin-lbl">Precio por ticket</label>
             <input class="admin-input" type="number" id="cfgPrecio" placeholder="5000">
           </div>
           <div class="admin-row">
@@ -606,7 +607,7 @@ body.light .drawer-item{background:#F4F4F4}
         <div class="price-box" style="margin-top:.8rem">
           <div class="price-unit" id="precioUnitLabel">1 ticket = $0 COP</div>
           <div class="price-total" id="precioTotal">$0</div>
-          <div class="price-currency">PESOS COLOMBIANOS</div>
+          <div class="price-currency" id="precioMonedaNombre">PESOS COLOMBIANOS</div>
         </div>
         <div class="quick-btns">
           <div class="quick-btn" onclick="setQty(5)">5<br><small style="color:var(--green);font-size:.65rem" id="qp5"></small></div>
@@ -645,10 +646,12 @@ body.light .drawer-item{background:#F4F4F4}
         <div class="pay-card daviplata" onclick="selectPago('daviplata',this)"><div class="pay-icon">❤️</div><div class="pay-name" style="color:#E52B20">Daviplata</div></div>
         <div class="pay-card breb" onclick="selectPago('breb',this)"><div class="pay-icon">🔑</div><div class="pay-name" style="color:#FFC300">Bre-B</div></div>
         <div class="pay-card binance" onclick="selectPago('binance',this)"><div class="pay-icon">🟡</div><div class="pay-name" style="color:#F3BA2F">Binance</div></div>
+        <div class="pay-card pago_movil" onclick="selectPago('pago_movil',this)" id="cardPagoMovil" style="display:none"><div class="pay-icon">📱</div><div class="pay-name" style="color:#1565C0">Pago Móvil</div></div>
       </div>
       <div class="pay-info-box" id="payInfoBox">
         <div class="pay-info-lbl" id="payInfoLbl"></div>
         <div class="pay-info-num" id="payInfoNum"></div>
+        <div id="payInfoExtra" style="display:none;margin-top:.5rem;font-size:.85rem;line-height:1.8;color:var(--txt2)"></div>
         <div style="font-size:.78rem;color:var(--txt2);margin-top:.4rem">Transfiere exactamente <strong id="payInfoTotal"></strong> y sube el comprobante</div>
       </div>
       <label class="form-label">Referencia de transferencia</label>
@@ -694,7 +697,7 @@ body.light .drawer-item{background:#F4F4F4}
 // SUPABASE — reemplazar con las credenciales reales
 // ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://pecdwxhtaplzjafufiks.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_C-wCdm6KyNSbyvkFNEOlWQ_AJHoEHZH';
+const SUPABASE_KEY = 'sb_publishable_WtVtoFHBZBWCWogv3FGngQ_mUx6FcUw';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Carga prioritaria y mínima del video/imagen del hero — se dispara de inmediato,
@@ -733,12 +736,17 @@ let cfg = {
   daviplata_numero: '',
   breb_numero: '',
   binance_id: '',
+  pago_movil_banco: '',
+  pago_movil_telefono: '',
+  pago_movil_cedula: '',
   total_tickets: 200,
   rifa_nombre: 'Gran Rifa de Moto',
   admin_password: 'gustavo2025',
   facebook_url: '',
   instagram_url: '',
-  youtube_url: ''
+  youtube_url: '',
+  moneda_simbolo: '$',
+  moneda_nombre: 'PESOS COLOMBIANOS'
 };
 
 async function cargarConfig() {
@@ -749,7 +757,7 @@ async function cargarConfig() {
   aplicarConfig();
 }
 
-function fmt(n) { return '$' + Number(n).toLocaleString('es-CO'); }
+function fmt(n) { return (cfg.moneda_simbolo || '$') + Number(n).toLocaleString('es-CO'); }
 
 function aplicarConfig() {
   // Hero
@@ -783,11 +791,17 @@ function aplicarConfig() {
     }
   }
 
-  // Precio
+  // Precio y moneda
   const precio = Number(cfg.precio_ticket) || 5000;
   document.getElementById('stripPrecio').textContent = fmt(precio);
+  const monedaEl = document.getElementById('precioMonedaNombre');
+  if (monedaEl) monedaEl.textContent = (cfg.moneda_nombre || 'PESOS COLOMBIANOS').toUpperCase();
   actualizarPrecio();
   actualizarQuickBtns();
+  // Pago Móvil — mostrar solo si está configurado
+  const cardPM = document.getElementById('cardPagoMovil');
+  if (cardPM) cardPM.style.display = cfg.pago_movil_telefono ? '' : 'none';
+
   // Premios intermedios
   mostrarPremiosPublicos();
   mostrarPremiosActuales();
@@ -953,7 +967,7 @@ function actualizarPrecio() {
   const total = precio * pState.qty;
   const unitEl = document.getElementById('precioUnitLabel');
   const totEl = document.getElementById('precioTotal');
-  if (unitEl) unitEl.textContent = `1 ticket = ${fmt(precio)} COP`;
+  if (unitEl) unitEl.textContent = `1 ticket = ${fmt(precio)}`;
   if (totEl) totEl.textContent = fmt(total);
   const ptEl = document.getElementById('payInfoTotal');
   if (ptEl) ptEl.textContent = fmt(total);
@@ -992,7 +1006,7 @@ function validarStep2() {
 // ══════════════════════════════════════════════
 // STEP 3 — PAGO
 // ══════════════════════════════════════════════
-const PAY_LABELS = { nequi:'Nequi', daviplata:'Daviplata', breb:'Bre-B', binance:'Binance Pay' };
+const PAY_LABELS = { nequi:'Nequi', daviplata:'Daviplata', breb:'Bre-B', binance:'Binance Pay', pago_movil:'Pago Móvil' };
 const PAY_CFG_KEYS = { nequi:'nequi_numero', daviplata:'daviplata_numero', breb:'breb_numero', binance:'binance_id' };
 
 function selectPago(metodo, card) {
@@ -1002,10 +1016,17 @@ function selectPago(metodo, card) {
   const box = document.getElementById('payInfoBox');
   const lbl = document.getElementById('payInfoLbl');
   const num = document.getElementById('payInfoNum');
-  const key = PAY_CFG_KEYS[metodo];
-  const valor = cfg[key] || '(no configurado)';
+  const extra = document.getElementById('payInfoExtra');
   lbl.textContent = 'Pagar con ' + PAY_LABELS[metodo];
-  num.textContent = valor;
+  if (metodo === 'pago_movil') {
+    num.textContent = cfg.pago_movil_telefono || '(no configurado)';
+    extra.style.display = 'block';
+    extra.innerHTML = `🏦 <strong>Banco:</strong> ${cfg.pago_movil_banco||'-'}<br>🪪 <strong>Cédula:</strong> ${cfg.pago_movil_cedula||'-'}`;
+  } else {
+    const key = PAY_CFG_KEYS[metodo];
+    num.textContent = cfg[key] || '(no configurado)';
+    extra.style.display = 'none';
+  }
   box.classList.add('show');
   actualizarBtnFinalizar();
 }

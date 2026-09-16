@@ -126,13 +126,6 @@ input,select,textarea{font-family:inherit;outline:none}
 
 <!-- ══ DASHBOARD ══ -->
 <div class="dash" id="dashView">
-  <div id="pagoBanner" style="display:none;background:#F39C12;color:#fff;padding:.75rem 1.2rem;font-size:.88rem;font-weight:800;text-align:center;position:sticky;top:0;z-index:300;letter-spacing:.3px"></div>
-  <div id="pagoBloqueo" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem">
-    <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
-    <div style="color:#fff;font-size:1.4rem;font-weight:900;margin-bottom:.8rem">Acceso bloqueado</div>
-    <div style="color:rgba(255,255,255,.7);font-size:.9rem">El servicio está temporalmente bloqueado.<br>Comunícate con el administrador para renovar.</div>
-  </div>
-
   <div class="dash-nav">
     <div class="dash-brand">⚙️ ADMIN — GUSTAVO RIFAS</div>
     <div style="display:flex;gap:.5rem;align-items:center">
@@ -198,8 +191,10 @@ input,select,textarea{font-family:inherit;outline:none}
       <div class="card">
         <div class="card-title">🎫 Rifa</div>
         <div class="row"><label class="lbl">Nombre del premio</label><input class="inp" id="cNombre" placeholder="Gran Rifa de Moto"></div>
-        <div class="row"><label class="lbl">Precio por ticket (COP)</label><input class="inp" type="number" id="cPrecio" placeholder="5000"></div>
+        <div class="row"><label class="lbl">Precio por ticket</label><input class="inp" type="number" id="cPrecio" placeholder="5000"></div>
         <div class="row"><label class="lbl">Total de tickets disponibles en la rifa</label><input class="inp" type="number" id="cTotal" placeholder="Ej: 500"></div>
+        <div class="row"><label class="lbl">Símbolo de moneda</label><input class="inp" id="cMonedaSimbolo" placeholder="$ · Bs. · Bs.D · €" maxlength="6"></div>
+        <div class="row"><label class="lbl">Nombre de moneda</label><input class="inp" id="cMonedaNombre" placeholder="Pesos Colombianos · Bolívares Venezolanos"></div>
         <button class="save-btn" id="btnGuardarRifa" onclick="guardarRifa()">💾 Guardar</button>
         <div class="msg" id="msgRifa"></div>
       </div>
@@ -209,6 +204,10 @@ input,select,textarea{font-family:inherit;outline:none}
         <div class="row"><label class="lbl">Daviplata — número</label><input class="inp" id="cDaviplata" placeholder="310 000 0000"></div>
         <div class="row"><label class="lbl">Bre-B — número o usuario</label><input class="inp" id="cBreb" placeholder="@usuario o número"></div>
         <div class="row"><label class="lbl">Binance — ID o email</label><input class="inp" id="cBinance" placeholder="ID Binance Pay"></div>
+        <div class="row" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--brd)"><label class="lbl" style="color:var(--or)">📱 Pago Móvil (Venezuela)</label></div>
+        <div class="row"><label class="lbl">Pago Móvil — Banco</label><input class="inp" id="cPagoMovilBanco" placeholder="Ej: Banco de Venezuela"></div>
+        <div class="row"><label class="lbl">Pago Móvil — Teléfono</label><input class="inp" id="cPagoMovilTelefono" placeholder="0414 000 0000"></div>
+        <div class="row"><label class="lbl">Pago Móvil — Cédula</label><input class="inp" id="cPagoMovilCedula" placeholder="V-00000000"></div>
         <button class="save-btn" id="btnGuardarPagos" onclick="guardarPagos()">💾 Guardar</button>
         <div class="msg" id="msgPagos"></div>
       </div>
@@ -355,7 +354,7 @@ input,select,textarea{font-family:inherit;outline:none}
 
 <script>
 const SUPABASE_URL = 'https://pecdwxhtaplzjafufiks.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_C-wCdm6KyNSbyvkFNEOlWQ_AJHoEHZH';
+const SUPABASE_KEY = 'sb_publishable_WtVtoFHBZBWCWogv3FGngQ_mUx6FcUw';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let cfg = { admin_password:'gustavo2025' };
@@ -367,38 +366,8 @@ let heroTipo = 'imagen';
 async function init() {
   const { data } = await sb.from('config').select('*');
   if (data) data.forEach(r => cfg[r.clave] = r.valor);
-  checkPagoMensual();
 }
 
-// Banner informativo — solo avisa, nunca bloquea
-function checkPagoMensual() {
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
-  const vence = new Date('2026-08-10T00:00:00');
-  const banner = document.getElementById('pagoBanner');
-  if (!banner) return;
-
-  if (hoy >= vence) {
-    banner.textContent = '🔴 Pago vencido — contacta al administrador';
-    banner.style.background = '#E74C3C';
-    banner.style.color = '#fff';
-    banner.style.display = 'block';
-    return;
-  }
-
-  const faltan = Math.round((vence - hoy) / 86400000) - 1;
-
-  const txt = faltan === 1 ? 'mañana es el día de pago' : `faltan ${faltan} día${faltan>1?'s':''} para el pago`;
-  let emoji, color, textColor;
-  if (faltan <= 3)       { emoji = '🔴'; color = '#E74C3C'; textColor = '#fff'; }
-  else if (faltan <= 10) { emoji = '🟠'; color = '#E67E22'; textColor = '#fff'; }
-  else if (faltan <= 15) { emoji = '🟡'; color = '#F1C40F'; textColor = '#333'; }
-  else                   { emoji = '🔵'; color = '#2980B9'; textColor = '#fff'; }
-  banner.textContent = `${emoji} Recuerda: ${txt} del servicio — vence el 10 de agosto`;
-  banner.style.background = color;
-  banner.style.color = textColor;
-  banner.style.display = 'block';
-}
 
 // ── LOGIN ──
 async function login() {
@@ -691,6 +660,8 @@ function cargarFormularios() {
   document.getElementById('cNombre').value = cfg.rifa_nombre||'';
   document.getElementById('cPrecio').value = cfg.precio_ticket||'';
   document.getElementById('cTotal').value = cfg.total_tickets||'200';
+  document.getElementById('cMonedaSimbolo').value = cfg.moneda_simbolo||'$';
+  document.getElementById('cMonedaNombre').value = cfg.moneda_nombre||'Pesos Colombianos';
   // Mostrar números dorados actuales si ya fueron sorteados
   try {
     const dorados = JSON.parse(cfg.premios_dorados||'[]');
@@ -703,6 +674,9 @@ function cargarFormularios() {
   document.getElementById('cDaviplata').value = cfg.daviplata_numero||'';
   document.getElementById('cBreb').value = cfg.breb_numero||'';
   document.getElementById('cBinance').value = cfg.binance_id||'';
+  document.getElementById('cPagoMovilBanco').value = cfg.pago_movil_banco||'';
+  document.getElementById('cPagoMovilTelefono').value = cfg.pago_movil_telefono||'';
+  document.getElementById('cPagoMovilCedula').value = cfg.pago_movil_cedula||'';
   // Bloquear si ya hay config guardada
   if (cfg.rifa_nombre || cfg.nequi_numero || cfg.precio_ticket) bloquearConfig();
   document.getElementById('cFb').value = cfg.facebook_url||'';
@@ -808,7 +782,7 @@ async function guardarHero() {
 }
 
 // ── RIFA ──
-const CAMPOS_CONFIG = ['cNombre','cPrecio','cTotal','cNequi','cDaviplata','cBreb','cBinance'];
+const CAMPOS_CONFIG = ['cNombre','cPrecio','cTotal','cNequi','cDaviplata','cBreb','cBinance','cPagoMovilBanco','cPagoMovilTelefono','cPagoMovilCedula'];
 const BTNS_CONFIG   = ['btnGuardarRifa','btnGuardarPagos'];
 
 function bloquearConfig() {
@@ -824,11 +798,17 @@ function desbloquearConfig() {
 async function guardarRifa() {
   let total = parseInt(document.getElementById('cTotal').value);
   if (!total || total < 1) { err('msgRifa','Ingresa un número válido'); return; }
+  const simbolo = document.getElementById('cMonedaSimbolo').value.trim() || '$';
+  const monedaNombre = document.getElementById('cMonedaNombre').value.trim() || 'Pesos Colombianos';
   await upsertCfg({
     rifa_nombre: document.getElementById('cNombre').value.trim(),
     precio_ticket: document.getElementById('cPrecio').value,
-    total_tickets: String(total)
+    total_tickets: String(total),
+    moneda_simbolo: simbolo,
+    moneda_nombre: monedaNombre
   });
+  cfg.moneda_simbolo = simbolo;
+  cfg.moneda_nombre = monedaNombre;
   if (!cfg.rifa_inicio) {
     const hoy = new Date().toLocaleDateString('es-CO');
     await sb.from('config').upsert({ clave: 'rifa_inicio', valor: hoy }, { onConflict: 'clave' });
@@ -904,7 +884,10 @@ async function guardarPagos() {
     nequi_numero: document.getElementById('cNequi').value.trim(),
     daviplata_numero: document.getElementById('cDaviplata').value.trim(),
     breb_numero: document.getElementById('cBreb').value.trim(),
-    binance_id: document.getElementById('cBinance').value.trim()
+    binance_id: document.getElementById('cBinance').value.trim(),
+    pago_movil_banco: document.getElementById('cPagoMovilBanco').value.trim(),
+    pago_movil_telefono: document.getElementById('cPagoMovilTelefono').value.trim(),
+    pago_movil_cedula: document.getElementById('cPagoMovilCedula').value.trim()
   });
   ok('msgPagos');
   bloquearConfig();
@@ -933,7 +916,7 @@ async function cambiarPass() {
 }
 
 // ── BOLETOS ──
-function fmt(n){ return '$'+Number(n).toLocaleString('es-CO'); }
+function fmt(n){ return (cfg.moneda_simbolo||'$')+Number(n).toLocaleString('es-CO'); }
 function pad(n){ return String(n).padStart(3,'0'); }
 const PAY = {nequi:'Nequi',daviplata:'Daviplata',breb:'Bre-B',binance:'Binance'};
 

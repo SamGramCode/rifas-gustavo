@@ -849,8 +849,9 @@ function cerrarVerificar() {
   document.body.style.overflow = '';
 }
 async function buscarTickets() {
-  const q = document.getElementById('verifInput').value.trim();
+  let q = document.getElementById('verifInput').value.trim();
   if (!q) return;
+  if (q.startsWith('+57')) { q = q.substring(3); }
   const res = document.getElementById('verifResultado');
   const btn = document.getElementById('btnBuscar');
   btn.textContent = '⏳ Buscando...';
@@ -859,7 +860,7 @@ async function buscarTickets() {
 
   const { data } = await sb.from('boletos')
     .select('nombre,numeros_asignados,cantidad,estado,created_at')
-    .or(`whatsapp.ilike.%${q}%,email.ilike.%${q}%`)
+    .or(`whatsapp.eq.${q},email.eq.${q}`)
     .neq('estado', 'rechazado');
 
   btn.textContent = 'Buscar mis tickets →';

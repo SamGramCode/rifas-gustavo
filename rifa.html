@@ -1126,9 +1126,9 @@ async function getTicketsDisponibles() {
 }
 
 async function asignarNumeros(qty) {
-  const { data } = await sb.from('boletos').select('numeros_asignados').in('estado', ['pendiente','aprobado']);
+  const { data } = await sb.from('numeros_vendidos').select('numero').eq('rifa_nombre', cfg.rifa_nombre || null);
   const usados = new Set();
-  if (data) data.forEach(r => (r.numeros_asignados||[]).forEach(n => usados.add(n)));
+  if (data) data.forEach(r => usados.add(r.numero));
   const total = Number(cfg.total_tickets) || 9999;
   const disponibles = [];
   for (let i = 1; i <= total; i++) {
